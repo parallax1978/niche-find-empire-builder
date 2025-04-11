@@ -34,7 +34,7 @@ const Admin = () => {
               <CardHeader>
                 <CardTitle>Upload Cities</CardTitle>
                 <CardDescription>
-                  Upload a CSV file with city data. The CSV should have columns for city name and population.
+                  Upload a CSV file with city data. The CSV should include columns for city name and population.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -43,10 +43,10 @@ const Admin = () => {
                 <div className="mt-6">
                   <h3 className="font-medium mb-2">Example CSV format:</h3>
                   <pre className="bg-slate-100 p-3 rounded text-sm">
-                    name,population{"\n"}
-                    New York,8804190{"\n"}
-                    Los Angeles,3898747{"\n"}
-                    Chicago,2746388
+                    city,state,state code,population{"\n"}
+                    New York,New York,NY,8804190{"\n"}
+                    Los Angeles,California,CA,3898747{"\n"}
+                    Chicago,Illinois,IL,2746388
                   </pre>
                 </div>
               </CardContent>
