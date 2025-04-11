@@ -7,6 +7,8 @@ import LoadingState from "@/components/LoadingState";
 import { SearchCriteria, KeywordResult } from "@/types";
 import { searchNiches } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
+import { Settings } from "lucide-react";
 
 const Index = () => {
   const [results, setResults] = useState<KeywordResult[]>([]);
@@ -52,10 +54,14 @@ const Index = () => {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b">
         <Container>
-          <div className="py-4">
+          <div className="py-4 flex items-center justify-between">
             <h1 className="text-3xl font-bold bg-brand-gradient bg-clip-text text-transparent">
               Rank & Rent Niche Finder
             </h1>
+            <Link to="/admin" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+              <Settings className="h-4 w-4" />
+              Admin
+            </Link>
           </div>
         </Container>
       </header>
