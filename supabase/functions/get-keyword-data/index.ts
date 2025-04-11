@@ -88,21 +88,39 @@ serve(async (req) => {
     try {
       console.log(`Fetching search volume from Moz API for keyword: "${keyword}"`)
       
-      // Using the Moz API v2 endpoint for keyword metrics
-      const mozResponse = await fetch('https://api.moz.com/v2/keyword-metrics', {
+      // Using Moz KeywordExplorer API with Access ID:Secret authentication
+      // Split the MOZ_API_KEY which should be in format "access_id:secret"
+      const [accessId, secret] = MOZ_API_KEY.split(':');
+      
+      if (!accessId || !secret) {
+        throw new Error('MOZ_API_KEY must be in format "access_id:secret"');
+      }
+      
+      console.log(`Moz API credentials: AccessID ${accessId.substring(0, 3)}... and Secret ${secret.substring(0, 3)}...`);
+      
+      const credentials = btoa(`${accessId}:${secret}`);
+      
+      // URL for the Keyword Explorer batch volume endpoint
+      const mozAPIUrl = 'https://lsapi.seomoz.com/v2/keyword_metrics';
+      
+      console.log(`Calling Moz API at ${mozAPIUrl}`);
+      
+      const mozResponse = await fetch(mozAPIUrl, {
         method: 'POST',
         headers: {
-          'Authorization': `Basic ${btoa(MOZ_API_KEY + ':')}`,
+          'Authorization': `Basic ${credentials}`,
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
         },
         body: JSON.stringify({
-          keywords: [keyword],
-          locale: 'en-US',
-          source: 'google',
-          include_serps: false
+          keyword_list: [keyword],
+          locale: 'en-us',
+          source: 'googleClickStream',
+          include_serp_data: false,
         })
       });
+      
+      // Log the raw response for debugging
+      console.log(`Moz API response status: ${mozResponse.status}`);
       
       if (!mozResponse.ok) {
         const errorText = await mozResponse.text();
@@ -113,24 +131,24 @@ serve(async (req) => {
       const mozData = await mozResponse.json();
       console.log(`Moz API data for "${keyword}":`, JSON.stringify(mozData, null, 2));
       
-      // Extract search volume from Moz API v2 response
-      if (mozData && mozData.results && mozData.results.length > 0) {
-        const keywordData = mozData.results[0];
-        if (keywordData.volume) {
-          searchVolume = parseInt(keywordData.volume) || 0;
+      // Extract search volume from Moz API response
+      if (mozData && mozData.result_metrics && mozData.result_metrics.length > 0) {
+        const keywordData = mozData.result_metrics[0];
+        if (keywordData.search_volume) {
+          searchVolume = keywordData.search_volume;
           console.log(`Successfully extracted real search volume from Moz API: ${searchVolume}`);
         } else {
-          console.warn(`No volume data found in Moz API response for "${keyword}"`);
+          console.warn(`No search_volume field in Moz API response for "${keyword}"`);
         }
       } else {
-        console.warn(`Could not find data in Moz API response for "${keyword}"`);
+        console.warn(`No result_metrics in Moz API response for "${keyword}"`);
       }
     } catch (mozError) {
       console.error(`Error getting search volume from Moz API: ${mozError.message}`);
       console.error(`Will fall back to SerpAPI estimation`);
     }
 
-    // Call SerpAPI to get CPC data
+    // Call SerpAPI to get CPC data (still needed for CPC)
     const url = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(keyword)}&api_key=${SERPAPI_API_KEY}&google_domain=google.com&gl=us`
     
     console.log(`Calling SerpAPI with URL: ${url.substring(0, url.indexOf('api_key=') + 8)}[API_KEY_HIDDEN]`)
