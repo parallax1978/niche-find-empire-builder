@@ -73,7 +73,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
         
         setNiches(nichesData);
         setCities(citiesData);
-        // Initial display - show cities sorted by population (largest first)
+        // Initial display - show top cities by population
         setFilteredCities(citiesData.slice(0, 100));
         
         console.log(`Loaded ${citiesData.length} cities and ${nichesData.length} niches`);
@@ -96,15 +96,15 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
     } else {
       const searchTerm = citySearchValue.toLowerCase().trim();
       
-      // Search through ALL cities without limiting the search
+      // FIXED: Search through ALL cities in the cities array
       const matches = cities.filter(city => 
         city.name.toLowerCase().includes(searchTerm)
       );
       
+      console.log(`Search for "${searchTerm}" found ${matches.length} total matches`);
+      
       // Display up to 100 matches
       setFilteredCities(matches.slice(0, 100));
-      
-      console.log(`Search for "${searchTerm}" found ${matches.length} total matches (displaying first ${Math.min(matches.length, 100)})`);
     }
   }, [citySearchValue, cities]);
 
@@ -284,6 +284,11 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                         {citySearchValue.trim() === "" && cities.length > 100 && (
                           <div className="py-2 px-2 text-xs text-center text-muted-foreground">
                             Showing top 100 cities by population. Type to search for more.
+                          </div>
+                        )}
+                        {citySearchValue.trim() !== "" && filteredCities.length >= 100 && (
+                          <div className="py-2 px-2 text-xs text-center text-muted-foreground">
+                            Showing first 100 matches. Try a more specific search if needed.
                           </div>
                         )}
                       </Command>
