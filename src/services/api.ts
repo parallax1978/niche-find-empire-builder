@@ -1,6 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { City, Niche, SearchCriteria, KeywordResult } from "@/types";
 
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yYnhvc2hudHh3c3Bkem9rY2RpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzOTAzMDYsImV4cCI6MjA1OTk2NjMwNn0.6F89Z4dkoUHafH0QAgu35ayeNE9_A9PQ6XaaV04zi-U";
+
 // Fetch cities from the database
 export const fetchCities = async (): Promise<City[]> => {
   try {
@@ -60,28 +62,16 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
   try {
     console.log(`Fetching data for keyword: ${keyword}`);
     
-    const response = await fetch(`https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yYnhvc2hudHh3c3Bkem9rY2RpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzOTAzMDYsImV4cCI6MjA1OTk2NjMwNn0.6F89Z4dkoUHafH0QAgu35ayeNE9_A9PQ6XaaV04zi-U`
-      },
-      body: JSON.stringify({ keyword }),
+    const { data, error } = await supabase.functions.invoke('get-keyword-data', {
+      body: { keyword }
     });
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Error fetching keyword data (${response.status}): ${errorText}`);
-      throw new Error(`Failed to fetch keyword data: ${errorText}`);
+    if (error) {
+      console.error(`Error fetching keyword data: ${error.message}`);
+      throw error;
     }
     
-    const data = await response.json();
     console.log(`Received data for keyword "${keyword}":`, data);
-    
-    if (data.error) {
-      console.error(`API reported error for "${keyword}":`, data.error);
-      throw new Error(`API error: ${data.error}`);
-    }
     
     return {
       searchVolume: data.searchVolume,

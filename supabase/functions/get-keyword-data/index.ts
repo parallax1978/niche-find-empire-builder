@@ -46,15 +46,6 @@ serve(async (req) => {
       throw new Error('MOZ_API_KEY environment variable is not set')
     }
     
-    const [accessId, secret] = MOZ_API_KEY.split(':')
-    
-    if (!accessId || !secret) {
-      throw new Error('MOZ_API_KEY must be in format access_id:secret')
-    }
-    
-    // Encode credentials for basic auth
-    const credentials = btoa(`${accessId}:${secret}`)
-    
     // Set up the Moz API request
     const mozUrl = 'https://lsapi.seomoz.com/v2/keyword_metrics'
     const mozBody = JSON.stringify({
@@ -66,7 +57,7 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${credentials}`
+        'Authorization': `Bearer ${MOZ_API_KEY}`
       },
       body: mozBody
     })
