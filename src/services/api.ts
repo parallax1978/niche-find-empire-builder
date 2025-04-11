@@ -11,19 +11,19 @@ export const fetchCities = async (): Promise<City[]> => {
       .select('*')
       .order('population', { ascending: false })
       .order('name');
-    
+
     if (error) {
       console.error("Error fetching cities:", error);
       throw error;
     }
-    
+
     console.log("Fetched cities:", data);
     console.log("Number of cities:", data?.length);
-    
+
     if (!data || data.length === 0) {
       throw new Error("No cities found in the database");
     }
-    
+
     return data;
   } catch (error) {
     console.error("Error in fetchCities:", error);
@@ -38,18 +38,18 @@ export const fetchNiches = async (): Promise<Niche[]> => {
       .from('niches')
       .select('*')
       .order('name');
-    
+
     if (error) {
       console.error("Error fetching niches:", error);
       throw error;
     }
-    
+
     console.log("Fetched niches:", data);
-    
+
     if (!data || data.length === 0) {
       throw new Error("No niches found in the database");
     }
-    
+
     return data;
   } catch (error) {
     console.error("Error in fetchNiches:", error);
@@ -57,36 +57,33 @@ export const fetchNiches = async (): Promise<Niche[]> => {
   }
 };
 
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 // Fetch keyword data from our edge function
 const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number, cpc: number, errorMessage?: string }> => {
   try {
     console.log(`Fetching data for keyword: ${keyword}`);
-    
+
     const { data, error } = await supabase.functions.invoke('get-keyword-data', {
       body: { keyword }
     });
-    
+
     if (error || !data) {
       console.error(`Error fetching keyword data: ${error?.message || 'No data received'}`);
-      return {
-        searchVolume: Math.floor(Math.random() * 10000), // Fallback to random data
-        cpc: Number((Math.random() * 10).toFixed(2)),
-        errorMessage: null // Don't show error to user, use fallback data instead
-      };
+      throw new Error(error?.message || 'Failed to fetch keyword data');
     }
-    
+
+    // Add delay between requests
+    await delay(1000);
+
     return {
-      searchVolume: data.searchVolume || Math.floor(Math.random() * 10000),
-      cpc: data.cpc || Number((Math.random() * 10).toFixed(2)),
+      searchVolume: data.searchVolume,
+      cpc: data.cpc,
       errorMessage: null
     };
   } catch (error) {
     console.error(`Error fetching keyword data for "${keyword}":`, error);
-    return {
-      searchVolume: Math.floor(Math.random() * 10000), // Fallback to random data
-      cpc: Number((Math.random() * 10).toFixed(2)),
-      errorMessage: null
-    };
+    throw error; // Re-throw the error to be handled higher up
   }
 };
 
@@ -94,13 +91,13 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
 export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordResult[]> => {
   try {
     console.log("Searching with criteria:", JSON.stringify(criteria, null, 2));
-    
+
     // Get cities data
     const cities = criteria.city ? [criteria.city] : await fetchCities();
-    
+
     // Get niches data
     const niches = criteria.niche ? [criteria.niche] : await fetchNiches();
-    
+
     // Filter cities by population if needed
     const filteredCities = criteria.population 
       ? cities.filter(city => {
@@ -109,16 +106,16 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
           return city.population >= min && city.population <= max;
         })
       : cities;
-      
+
     console.log(`Processing ${niches.length} niches and ${filteredCities.length} cities`);
-    
+
     const results: KeywordResult[] = [];
-    
+
     // Limit combinations to avoid overloading
     const maxCombinations = criteria.city || criteria.niche ? 10 : 3;
     const selectedCities = criteria.city ? [criteria.city] : filteredCities.slice(0, maxCombinations);
     const selectedNiches = criteria.niche ? [criteria.niche] : niches.slice(0, maxCombinations);
-    
+
     // Process combinations
     for (const niche of selectedNiches) {
       for (const city of selectedCities) {
@@ -126,17 +123,17 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
         if (results.length >= maxCombinations && !criteria.city && !criteria.niche) {
           break;
         }
-        
+
         // Generate the full keyword for searching
         const fullKeyword = `${niche.name.toLowerCase()} ${city.name}`;
-        
+
         // Create exactMatchDomain
         const exactMatchDomain = `${niche.name.toLowerCase().replace(/\s+/g, '')}${city.name.toLowerCase().replace(/\s+/g, '')}.com`;
-        
+
         try {
           // Get real data for this keyword
           const { searchVolume, cpc } = await fetchKeywordData(fullKeyword);
-          
+
           // Skip if doesn't meet criteria
           if (searchVolume < criteria.searchVolume.min || 
               searchVolume > criteria.searchVolume.max ||
@@ -144,10 +141,10 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
               cpc > criteria.cpc.max) {
             continue;
           }
-          
+
           // Simple domain availability check (just for demo)
           const domainAvailable = Math.random() > 0.7; // 30% chance available
-          
+
           results.push({
             id: crypto.randomUUID(),
             keyword: fullKeyword,
@@ -164,9 +161,9 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
         }
       }
     }
-    
+
     console.log(`Generated ${results.length} results after applying all filters`);
-    
+
     return results;
   } catch (error) {
     console.error("Error searching niches:", error);

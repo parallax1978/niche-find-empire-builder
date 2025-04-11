@@ -77,7 +77,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify(errorResponse), {
       headers: { 'Content-Type': 'application/json' },
-      status: 200 // Return 200 even for errors to handle them gracefully
+      status: 422 // Return proper error status
     })
   }
 })
