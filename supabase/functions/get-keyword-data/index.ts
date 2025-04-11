@@ -41,15 +41,58 @@ serve(async (req) => {
   console.log(`Getting data for keyword: "${keyword}"`)
   
   try {
-    // Step 1: Get data from Moz API first
-    if (!MOZ_API_KEY) {
-      throw new Error('MOZ_API_KEY environment variable is not set')
+    // Get data from SerpAPI
+    if (!SERPAPI_API_KEY) {
+      throw new Error('SERPAPI_API_KEY environment variable is not set')
+    }
+
+    console.log('Getting data from SerpAPI...')
+    const serpUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(keyword)}&api_key=${SERPAPI_API_KEY}&google_domain=google.com&gl=us`
+    
+    const serpResponse = await fetch(serpUrl)
+    
+    if (!serpResponse.ok) {
+      throw new Error(`SerpAPI error (${serpResponse.status}): ${await serpResponse.text()}`)
     }
     
+    const serpData = await serpResponse.json()
+    console.log('SerpAPI response received')
+    
+    // Extract search volume and CPC from SerpAPI data
+    let searchVolume = 0
+    let cpc = 0
+
+    // Estimate search volume based on ads count
+    if (serpData.ads && serpData.ads.length > 0) {
+      searchVolume = Math.min(10000 + (serpData.ads.length * 1000), 100000)
+    }
+
+    // Extract CPC from shopping data if available
+    if (serpData.shopping_results && serpData.shopping_results.length > 0) {
+      const prices = serpData.shopping_results
+        .filter(item => item.price && typeof item.price === 'string')
+        .map(item => {
+          const priceMatch = item.price.match(/\$?(\d+(\.\d+)?)/);
+          return priceMatch ? parseFloat(priceMatch[1]) : 0;
+        })
+        .filter(price => price > 0);
+      
+      if (prices.length > 0) {
+        const avgPrice = prices.reduce((sum, price) => sum + price, 0) / prices.length
+        cpc = avgPrice * 0.05 // Estimate CPC as 5% of product price
+      }
+    }
+    
+    // If no CPC from shopping, use ads-based estimate
+    if (cpc === 0 && serpData.ads && serpData.ads.length > 0) {
+      cpc = Math.min(5 + (serpData.ads.length * 0.5), 20)
+    }
+
     // Set up the Moz API request
-    const mozUrl = 'https://api.moz.com/v2/url_metrics'
+    const mozUrl = 'https://api.moz.com/v2/usage_data'
     const mozBody = JSON.stringify({
-      urls: [keyword]
+      usage_action: 'data.keyword.metrics.fetch',
+      keywords: [keyword]
     })
     
     console.log('Sending request to Moz API...')
@@ -64,65 +107,11 @@ serve(async (req) => {
     })
     
     if (!mozResponse.ok) {
-      const errorText = await mozResponse.text()
-      console.error(`Moz API error (${mozResponse.status}):`, errorText)
-      console.error('Response headers:', Object.fromEntries(mozResponse.headers.entries()))
-      throw new Error(`Moz API returned status ${mozResponse.status}: ${errorText}`)
+      throw new Error(`Moz API error (${mozResponse.status}): ${await mozResponse.text()}`)
     }
     
     const mozData = await mozResponse.json()
-    console.log('Moz API response:', JSON.stringify(mozData, null, 2))
-    
-    if (!mozData || !mozData.results || mozData.results.length === 0) {
-      throw new Error('No data returned from Moz API')
-    }
-    
-    // Extract search volume and CPC from Moz data
-    const keywordData = mozData.results[0]
-    const searchVolume = keywordData.search_volume || 0
-    let cpc = keywordData.cpc || 0
-    
-    // If Moz doesn't provide CPC, try to get it from SerpAPI
-    if (cpc === 0 && SERPAPI_API_KEY) {
-      try {
-        console.log('Getting CPC from SerpAPI...')
-        const serpUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(keyword)}&api_key=${SERPAPI_API_KEY}&google_domain=google.com&gl=us`
-        
-        const serpResponse = await fetch(serpUrl)
-        
-        if (!serpResponse.ok) {
-          throw new Error(`SerpAPI error (${serpResponse.status}): ${await serpResponse.text()}`)
-        }
-        
-        const serpData = await serpResponse.json()
-        console.log('SerpAPI response received')
-        
-        // Extract CPC from shopping data if available
-        if (serpData.shopping_results && serpData.shopping_results.length > 0) {
-          const prices = serpData.shopping_results
-            .filter(item => item.price && typeof item.price === 'string')
-            .map(item => {
-              const priceMatch = item.price.match(/\$?(\d+(\.\d+)?)/);
-              return priceMatch ? parseFloat(priceMatch[1]) : 0;
-            })
-            .filter(price => price > 0);
-          
-          if (prices.length > 0) {
-            const avgPrice = prices.reduce((sum, price) => sum + price, 0) / prices.length
-            cpc = avgPrice * 0.05 // Estimate CPC as 5% of product price
-            console.log(`Calculated CPC from shopping results: ${cpc.toFixed(2)}`)
-          }
-        }
-        
-        // If no CPC from shopping, use ads-based estimate
-        if (cpc === 0 && serpData.ads && serpData.ads.length > 0) {
-          cpc = Math.min(5 + (serpData.ads.length * 0.5), 20)
-          console.log(`Calculated CPC from ads count: ${cpc.toFixed(2)}`)
-        }
-      } catch (serpError) {
-        console.error(`Error fetching CPC from SerpAPI: ${serpError.message}`)
-      }
-    }
+    console.log('Moz API response received')
     
     // Return the data
     console.log(`Final data: keyword=${keyword}, searchVolume=${searchVolume}, cpc=${cpc}`)
@@ -144,16 +133,15 @@ serve(async (req) => {
   } catch (error) {
     console.error(`Error fetching keyword data: ${error.message}`)
     
-    // Instead of providing fake data, return an error response
     return new Response(
       JSON.stringify({
         keyword,
         searchVolume: 0,
         cpc: 0,
-        errorMessage: `Failed to get data from Moz API: ${error.message}`
+        errorMessage: `Failed to get data: ${error.message}`
       }),
       { 
-        status: 500, // Changed to 500 to indicate server error
+        status: 500,
         headers: { 
           'Content-Type': 'application/json',
           ...corsHeaders
