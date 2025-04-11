@@ -59,8 +59,7 @@ export const fetchNiches = async (): Promise<Niche[]> => {
 // Search for niches based on the provided criteria
 export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordResult[]> => {
   try {
-    // In a real application, this would be a call to your backend or a third-party API
-    // For now, we'll generate data based on actual cities and niches from the database
+    console.log("Searching with criteria:", JSON.stringify(criteria, null, 2));
     
     // Get real city data if a specific city wasn't selected
     const cities = criteria.city ? [criteria.city] : await fetchCities();
@@ -73,22 +72,27 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
     // Generate combinations of keywords and locations using real data
     for (const niche of niches) {
       for (const city of cities) {
-        // Only include results that match the criteria
+        // Skip if population criteria doesn't match (check this first)
+        if (criteria.population) {
+          const min = criteria.population.min || 0;
+          const max = criteria.population.max || Number.MAX_SAFE_INTEGER;
+          
+          if (city.population < min || city.population > max) {
+            // Log skipped cities due to population filter
+            console.log(`Skipping ${city.name} (pop: ${city.population}) - outside population range ${min}-${max}`);
+            continue;
+          }
+        }
+        
+        // Generate random search volume and CPC values for demonstration
         const searchVolume = Math.floor(Math.random() * 900000) + 100000;
         const cpc = Math.random() * 49 + 1;
         
-        // Skip if doesn't meet criteria
+        // Skip if doesn't meet search volume or CPC criteria
         if (searchVolume < criteria.searchVolume.min || 
             searchVolume > criteria.searchVolume.max ||
             cpc < criteria.cpc.min || 
             cpc > criteria.cpc.max) {
-          continue;
-        }
-        
-        // Skip if population criteria doesn't match
-        if (criteria.population && 
-            (city.population < criteria.population.min || 
-             city.population > criteria.population.max)) {
           continue;
         }
         
@@ -108,6 +112,8 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
         });
       }
     }
+    
+    console.log(`Generated ${results.length} results after applying all filters`);
     
     return results;
   } catch (error) {

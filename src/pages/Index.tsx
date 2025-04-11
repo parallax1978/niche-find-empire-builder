@@ -21,13 +21,19 @@ const Index = () => {
     setHasSearched(true);
     
     try {
+      console.log("Starting search with criteria:", JSON.stringify(criteria, null, 2));
+      
       const searchResults = await searchNiches(criteria);
       setResults(searchResults);
+      
+      console.log(`Search completed with ${searchResults.length} results`);
       
       if (searchResults.length === 0) {
         toast({
           title: "No results found",
-          description: "Try adjusting your search criteria to broaden your search.",
+          description: criteria.population 
+            ? `Try adjusting your population range (${criteria.population.min}-${criteria.population.max}) or other search criteria.`
+            : "Try adjusting your search criteria to broaden your search.",
           variant: "default",
         });
       } else {

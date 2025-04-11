@@ -117,6 +117,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   }, [citySearchValue, cities]);
 
   const handleSubmit = () => {
+    // Create search criteria object with properly initialized population values
     const criteria: SearchCriteria = {
       niche: selectedNiche,
       city: selectedCity,
@@ -130,12 +131,20 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
       },
     };
 
+    // Only add population criteria if it's enabled
     if (isPopulationEnabled) {
       const min = populationMin ? parseInt(populationMin, 10) : 0;
       const max = populationMax ? parseInt(populationMax, 10) : Number.MAX_SAFE_INTEGER;
       criteria.population = { min, max };
+      
+      console.log(`Population filter enabled: ${min}-${max}`);
+    } else {
+      console.log("Population filter disabled");
     }
 
+    // Log the final search criteria for debugging
+    console.log("Final search criteria:", JSON.stringify(criteria, null, 2));
+    
     onSearch(criteria);
   };
 
