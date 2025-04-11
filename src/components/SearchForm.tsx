@@ -73,7 +73,8 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
         
         setNiches(nichesData);
         setCities(citiesData);
-        setFilteredCities(citiesData.slice(0, 100)); // Initially show first 100 cities
+        // Show only top 100 cities initially when no search is performed
+        setFilteredCities(citiesData.slice(0, 100));
         
         console.log(`Loaded ${citiesData.length} cities and ${nichesData.length} niches`);
       } catch (error) {
@@ -87,53 +88,27 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
     loadData();
   }, [toast]);
 
+  // This effect handles city filtering based on user search
   useEffect(() => {
     if (citySearchValue.trim() === "") {
-      setFilteredCities(cities.slice(0, 100)); // Show top 100 cities when no search
+      // No search term - show top 100 cities by population
+      setFilteredCities(cities.slice(0, 100));
     } else {
       const searchTerm = citySearchValue.toLowerCase().trim();
       
-      // Don't limit the search, just the display results
-      const allMatches = cities.filter(city => 
+      // Search through ALL cities without limiting the search itself
+      const matches = cities.filter(city => 
         city.name.toLowerCase().includes(searchTerm)
       );
       
-      // Only limit display results to 100 after filtering
-      const filtered = allMatches.slice(0, 100);
+      // Only limit what we display to the user (not what we search through)
+      const displayResults = matches.slice(0, 100);
+      setFilteredCities(displayResults);
       
-      setFilteredCities(filtered);
+      console.log(`Search for "${searchTerm}" found ${matches.length} total matches (displaying first ${displayResults.length})`);
       
-      console.log(`Search for "${searchTerm}" found ${allMatches.length} results (showing first ${filtered.length})`);
-      
-      if (allMatches.length < 10) {
-        console.log("Found cities:", allMatches.map(c => c.name));
-      }
-      
-      // Extra debugging for cartersville specifically
-      if (searchTerm === "cartersville" || searchTerm.includes("cartersville")) {
-        console.log("Searching specifically for cartersville");
-        
-        const allCityNames = cities.map(city => city.name.toLowerCase());
-        console.log("Last 10 cities in database:", allCityNames.slice(-10));
-        
-        const hasCartersville = cities.some(city => 
-          city.name.toLowerCase().includes("cartersville")
-        );
-        
-        console.log(`Is "cartersville" in the cities array? ${hasCartersville}`);
-        
-        if (hasCartersville) {
-          const cartersvilleCity = cities.find(city => 
-            city.name.toLowerCase().includes("cartersville")
-          );
-          console.log("Cartersville city data:", cartersvilleCity);
-        } else {
-          // Check partial matches
-          const partialMatches = cities.filter(city => 
-            city.name.toLowerCase().includes("carter")
-          );
-          console.log("Cities containing 'carter':", partialMatches.map(c => c.name));
-        }
+      if (matches.length === 0) {
+        console.log("No cities found matching that search term");
       }
     }
   }, [citySearchValue, cities]);
