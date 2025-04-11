@@ -68,19 +68,36 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
     
     if (error) {
       console.error(`Error fetching keyword data: ${error.message}`);
-      throw error;
+      return {
+        searchVolume: 0,
+        cpc: 0,
+        errorMessage: error.message
+      };
     }
     
     console.log(`Received data for keyword "${keyword}":`, data);
     
+    // If there's an error message in the response, return zeros with the error
+    if (data.errorMessage) {
+      return {
+        searchVolume: 0,
+        cpc: 0,
+        errorMessage: data.errorMessage
+      };
+    }
+    
     return {
       searchVolume: data.searchVolume,
       cpc: data.cpc,
-      errorMessage: data.errorMessage
+      errorMessage: null
     };
   } catch (error) {
     console.error(`Error fetching keyword data for "${keyword}":`, error);
-    throw error;
+    return {
+      searchVolume: 0,
+      cpc: 0,
+      errorMessage: error instanceof Error ? error.message : String(error)
+    };
   }
 };
 
