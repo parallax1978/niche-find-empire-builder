@@ -86,8 +86,6 @@ serve(async (req) => {
     if (!mozData || typeof mozData !== 'object') {
       throw new Error('Unexpected response format from Moz API');
     }
-    
-    const mozData = await mozResponse.json()
     console.log('Moz API response:', JSON.stringify(mozData, null, 2))
     
     if (!mozData || !mozData.results || mozData.results.length === 0) {
