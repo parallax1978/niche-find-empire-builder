@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { City, Niche, SearchCriteria, KeywordResult } from "@/types";
 
@@ -97,7 +96,10 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
         }
         
         const fullKeyword = `${niche.name.toLowerCase()} ${city.name}`;
-        const exactMatchDomain = `${niche.name.toLowerCase()}${city.name.toLowerCase().replace(/\s+/g, '')}.com`;
+        
+        // Create exactMatchDomain without spaces and in lowercase
+        const exactMatchDomain = `${niche.name.toLowerCase().replace(/\s+/g, '')}${city.name.toLowerCase().replace(/\s+/g, '')}.com`;
+        
         const domainAvailable = Math.random() > 0.7; // 30% chance domain is available
         
         results.push({
