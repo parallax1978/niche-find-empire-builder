@@ -52,21 +52,42 @@ export const fetchNiches = async (): Promise<Niche[]> => {
 // Generate keyword variants based on available data
 const generateKeywordVariants = (niche?: string, city?: string): string[] => {
   if (niche && city) {
+    // Only generate city + niche or niche + city combinations
     return [
       `${city} ${niche}`,
       `${niche} ${city}`,
-      `${niche} in ${city}`,
-      `${city} local ${niche}`,
-      `best ${niche} in ${city}`,
     ];
   } else if (niche) {
-    return [niche, `best ${niche}`, `professional ${niche}`, `${niche} services`];
+    // If only niche is provided, return generic combinations
+    return getAllCities().map(city => [`${city} ${niche}`, `${niche} ${city}`]).flat();
   } else if (city) {
-    return [city, `services in ${city}`, `local businesses ${city}`];
+    // If only city is provided, return combinations with all niches
+    return getAllNiches().map(niche => [`${city} ${niche}`, `${niche} ${city}`]).flat();
   } else {
-    // If neither niche nor city is provided, return some generic business keywords
-    return ["local services", "professional services", "small business", "home services"];
+    // If neither is provided, generate all possible combinations
+    const allCombinations: string[] = [];
+    const cities = getAllCities();
+    const niches = getAllNiches();
+    
+    for (const city of cities) {
+      for (const niche of niches) {
+        allCombinations.push(`${city} ${niche}`);
+        allCombinations.push(`${niche} ${city}`);
+      }
+    }
+    
+    return allCombinations;
   }
+};
+
+// Helper to get all city names
+const getAllCities = (): string[] => {
+  return MOCK_CITIES.map(city => city.name);
+};
+
+// Helper to get all niche names
+const getAllNiches = (): string[] => {
+  return MOCK_NICHES.map(niche => niche.name);
 };
 
 // Generate mock search data for a keyword
@@ -81,18 +102,29 @@ const generateMockSearchData = (keyword: string): { volume: number; cpc: number 
   };
 };
 
-// Mock domain availability check
+// Format keyword for domain check by removing spaces and special characters
+const formatForDomain = (keyword: string): string => {
+  return keyword.toLowerCase()
+    .replace(/\s+/g, "")        // Remove spaces
+    .replace(/[^a-z0-9]/g, ""); // Remove special characters
+};
+
+// Mock domain availability check for EMD (Exact Match Domain)
 const checkDomainAvailability = async (keyword: string): Promise<boolean> => {
   // In a real implementation, this would call the Namecheap API
+  // Format keyword for domain name
+  const domainName = formatForDomain(keyword);
+  
   // We'll randomly determine availability for the mock
+  // In reality, this would check if domainName.com is available
   return Math.random() > 0.5;
 };
 
 // Generate affiliate link for domain registration
 const generateAffiliateLink = (keyword: string): string => {
   // In a real implementation, this would generate a proper Namecheap affiliate link
-  // For now, we'll just create a mock URL
-  const domainName = keyword.toLowerCase().replace(/\s+/g, "-");
+  // Format the domain name
+  const domainName = formatForDomain(keyword);
   return `https://www.namecheap.com/domains/registration/results/?domain=${domainName}.com`;
 };
 
@@ -130,6 +162,8 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
           }
           
           if (populationPass) {
+            // Check EMD availability (exactmatchdomain.com)
+            const domainName = formatForDomain(keyword);
             const domainAvailable = await checkDomainAvailability(keyword);
             const domainLink = domainAvailable ? generateAffiliateLink(keyword) : null;
             
@@ -144,6 +178,7 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
               population: criteria.city?.population || null,
               domainAvailable,
               domainLink,
+              exactMatchDomain: `${domainName}.com` // Add the EMD to the result
             });
           }
         }

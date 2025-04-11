@@ -35,4 +35,5 @@ export interface KeywordResult {
   population: number | null;
   domainAvailable: boolean;
   domainLink: string | null;
+  exactMatchDomain: string; // Added EMD
 }

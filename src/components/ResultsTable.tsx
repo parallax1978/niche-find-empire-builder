@@ -90,6 +90,7 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
           <TableHeader>
             <TableRow>
               <TableHead>Keyword</TableHead>
+              <TableHead>EMD</TableHead>
               <TableHead className="text-right">Search Volume</TableHead>
               <TableHead className="text-right">CPC</TableHead>
               {results[0].population !== null && (
@@ -103,6 +104,7 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
             {currentResults.map((result) => (
               <TableRow key={result.id}>
                 <TableCell className="font-medium">{result.keyword}</TableCell>
+                <TableCell className="font-mono text-sm">{result.exactMatchDomain}</TableCell>
                 <TableCell className="text-right">{formatNumber(result.searchVolume)}</TableCell>
                 <TableCell className="text-right">{formatCpc(result.cpc)}</TableCell>
                 {result.population !== null && (
