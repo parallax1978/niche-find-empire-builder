@@ -25,7 +25,7 @@ export const parseCitiesCsv = (content: string): City[] => {
   
   const startIndex = hasHeader ? 1 : 0;
   
-  // Default to the specific order: City (first), State (second), Population (third)
+  // EXPLICITLY set the column indexes to match the desired order: City (first), State (second), Population (third)
   let cityIndex = 0;
   let stateIndex = 1;
   let populationIndex = 2;
