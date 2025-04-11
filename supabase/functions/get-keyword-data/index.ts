@@ -1,4 +1,3 @@
-
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const MOZ_API_KEY = Deno.env.get('MOZ_API_KEY')
@@ -152,26 +151,16 @@ serve(async (req) => {
   } catch (error) {
     console.error(`Error fetching keyword data: ${error.message}`)
     
-    // Check if we should provide a stable deterministic fallback based on the keyword
-    // This will ensure the same keyword always returns the same fallback data
-    const stableSeed = Array.from(keyword).reduce((acc, char) => acc + char.charCodeAt(0), 0)
-    const pseudoRandom = (stableSeed % 100) / 100 // Value between 0-1 that's consistent for the same keyword
-    
-    // Generate stable fallback values based on the keyword
-    const searchVolume = Math.floor(1000 + (pseudoRandom * 19000)) // 1000-20000
-    const cpc = parseFloat((0.5 + (pseudoRandom * 5)).toFixed(2)) // $0.50-$5.50
-    
-    console.log(`Using deterministic fallback data: searchVolume=${searchVolume}, cpc=${cpc}`)
-    
+    // Instead of providing fake data, return an error response
     return new Response(
       JSON.stringify({
         keyword,
-        searchVolume,
-        cpc,
-        errorMessage: error.message
+        searchVolume: 0,
+        cpc: 0,
+        errorMessage: `Failed to get data from Moz API: ${error.message}`
       }),
       { 
-        status: 200, 
+        status: 500, // Changed to 500 to indicate server error
         headers: { 
           'Content-Type': 'application/json',
           ...corsHeaders
