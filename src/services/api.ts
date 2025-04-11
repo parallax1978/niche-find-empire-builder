@@ -1,7 +1,49 @@
-
 import { City, Niche, KeywordResult, SearchCriteria } from "../types";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock data for cities
+// Fetch cities from Supabase
+export const fetchCities = async (): Promise<City[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('cities')
+      .select('*')
+      .order('name');
+    
+    if (error) {
+      console.error("Error fetching cities:", error);
+      throw error;
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error("Error in fetchCities:", error);
+    // Fallback to mock data in case of error
+    return MOCK_CITIES;
+  }
+};
+
+// Fetch niches from Supabase
+export const fetchNiches = async (): Promise<Niche[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('niches')
+      .select('*')
+      .order('name');
+    
+    if (error) {
+      console.error("Error fetching niches:", error);
+      throw error;
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error("Error in fetchNiches:", error);
+    // Fallback to mock data in case of error
+    return MOCK_NICHES;
+  }
+};
+
+// Mock data for fallback
 const MOCK_CITIES: City[] = [
   { id: 1, name: "New York", population: 8804190 },
   { id: 2, name: "Los Angeles", population: 3898747 },
@@ -15,7 +57,7 @@ const MOCK_CITIES: City[] = [
   { id: 10, name: "San Jose", population: 1013240 },
 ];
 
-// Mock data for niches
+// Mock data for fallback
 const MOCK_NICHES: Niche[] = [
   { id: 1, name: "Plumber" },
   { id: 2, name: "Electrician" },
@@ -28,26 +70,6 @@ const MOCK_NICHES: Niche[] = [
   { id: 9, name: "House Cleaning" },
   { id: 10, name: "Moving Services" },
 ];
-
-// This function would fetch from Supabase in a real implementation
-export const fetchCities = async (): Promise<City[]> => {
-  // Simulate API call
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(MOCK_CITIES);
-    }, 500);
-  });
-};
-
-// This function would fetch from Supabase in a real implementation
-export const fetchNiches = async (): Promise<Niche[]> => {
-  // Simulate API call
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(MOCK_NICHES);
-    }, 500);
-  });
-};
 
 // Generate keyword variants based on available data
 const generateKeywordVariants = (niche?: string, city?: string): string[] => {
@@ -128,14 +150,67 @@ const generateAffiliateLink = (keyword: string): string => {
   return `https://www.namecheap.com/domains/registration/results/?domain=${domainName}.com`;
 };
 
-// Search for niches based on criteria
+// Search for keywords based on search criteria
 export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordResult[]> => {
-  // In a real implementation, this would:
-  // 1. Query Supabase for niche and city combinations
-  // 2. Call SERP API for each keyword to get volume and CPC
-  // 3. Check domain availability via Namecheap API
+  // Try to get results from Supabase first
+  try {
+    let query = supabase.from('keyword_results').select('*');
+    
+    // Apply filters if provided
+    if (criteria.niche) {
+      query = query.ilike('keyword', `%${criteria.niche.name}%`);
+    }
+    
+    if (criteria.city) {
+      query = query.or(`keyword.ilike.%${criteria.city.name}%`);
+    }
+    
+    if (criteria.searchVolume) {
+      query = query
+        .gte('search_volume', criteria.searchVolume.min)
+        .lte('search_volume', criteria.searchVolume.max);
+    }
+    
+    if (criteria.cpc) {
+      query = query
+        .gte('cpc', criteria.cpc.min)
+        .lte('cpc', criteria.cpc.max);
+    }
+    
+    if (criteria.population && criteria.city) {
+      // Note: population filtering is handled client-side since it's related to the city
+      // This is a simplification, in a real app you might want a more sophisticated approach
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error("Error fetching keyword results:", error);
+      throw error;
+    }
+    
+    if (data && data.length > 0) {
+      // Filter by population if criteria.population is provided
+      let results = data;
+      if (criteria.population && criteria.city) {
+        if (criteria.city.population >= criteria.population.min && 
+            criteria.city.population <= criteria.population.max) {
+          results = data.filter(item => 
+            item.keyword.includes(criteria.city!.name));
+        } else {
+          // If the selected city doesn't meet the population criteria
+          results = [];
+        }
+      }
+      
+      return results;
+    }
+  } catch (error) {
+    console.error("Error searching Supabase:", error);
+    // If there's an error or no results, fall back to the mock implementation
+  }
   
-  // For our mock implementation:
+  // Fall back to mock implementation
   return new Promise((resolve) => {
     setTimeout(async () => {
       const nicheName = criteria.niche?.name;
@@ -178,7 +253,7 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
               population: criteria.city?.population || null,
               domainAvailable,
               domainLink,
-              exactMatchDomain: `${domainName}.com` // Add the EMD to the result
+              exactMatchDomain: `${domainName}.com`
             });
           }
         }

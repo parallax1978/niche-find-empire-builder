@@ -9,7 +9,75 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      cities: {
+        Row: {
+          id: number
+          name: string
+          population: number
+        }
+        Insert: {
+          id?: number
+          name: string
+          population: number
+        }
+        Update: {
+          id?: number
+          name?: string
+          population?: number
+        }
+        Relationships: []
+      }
+      keyword_results: {
+        Row: {
+          cpc: number
+          created_at: string | null
+          domain_available: boolean | null
+          domain_link: string | null
+          exact_match_domain: string
+          id: string
+          keyword: string
+          population: number | null
+          search_volume: number
+        }
+        Insert: {
+          cpc: number
+          created_at?: string | null
+          domain_available?: boolean | null
+          domain_link?: string | null
+          exact_match_domain: string
+          id?: string
+          keyword: string
+          population?: number | null
+          search_volume: number
+        }
+        Update: {
+          cpc?: number
+          created_at?: string | null
+          domain_available?: boolean | null
+          domain_link?: string | null
+          exact_match_domain?: string
+          id?: string
+          keyword?: string
+          population?: number | null
+          search_volume?: number
+        }
+        Relationships: []
+      }
+      niches: {
+        Row: {
+          id: number
+          name: string
+        }
+        Insert: {
+          id?: number
+          name: string
+        }
+        Update: {
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
