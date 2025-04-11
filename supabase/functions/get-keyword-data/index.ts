@@ -2,6 +2,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const SERPAPI_API_KEY = Deno.env.get('SERPAPI_API_KEY')
+const MOZ_API_KEY = Deno.env.get('MOZ_API_KEY')
 
 interface RequestBody {
   keyword: string
@@ -39,11 +40,10 @@ serve(async (req) => {
       )
     }
 
-    // Validate API key exists and isn't empty
+    // Validate API keys exist and aren't empty
     if (!SERPAPI_API_KEY || SERPAPI_API_KEY.trim() === '') {
       console.error('SerpAPI key is not configured in environment variables')
       
-      // Return an informative error without mock data to make it obvious
       return new Response(
         JSON.stringify({ 
           error: 'SerpAPI key is not configured',
@@ -60,10 +60,77 @@ serve(async (req) => {
       )
     }
 
+    if (!MOZ_API_KEY || MOZ_API_KEY.trim() === '') {
+      console.error('Moz API key is not configured in environment variables')
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'Moz API key is not configured',
+          details: 'The MOZ_API_KEY secret is missing or empty in your Supabase edge function secrets',
+          mockDataUsed: false
+        }),
+        { 
+          status: 500, 
+          headers: { 
+            'Content-Type': 'application/json',
+            ...corsHeaders 
+          } 
+        }
+      )
+    }
+
     console.log(`Getting data for keyword: "${keyword}"`)
     console.log(`Using SerpAPI key: ${SERPAPI_API_KEY.substring(0, 3)}...${SERPAPI_API_KEY.substring(SERPAPI_API_KEY.length - 3)}`)
+    console.log(`Using Moz API key: ${MOZ_API_KEY.substring(0, 3)}...${MOZ_API_KEY.substring(MOZ_API_KEY.length - 3)}`)
 
-    // Call SerpAPI to get keyword data
+    // Get accurate search volume from Moz API
+    let searchVolume = 0;
+    try {
+      console.log(`Fetching search volume from Moz API for keyword: "${keyword}"`)
+      
+      // Encode the API credentials
+      const credentials = btoa(`${MOZ_API_KEY}:${MOZ_API_KEY}`);
+      
+      // Call Moz API to get keyword volume data
+      const mozResponse = await fetch('https://moz.com/api/metrics', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${credentials}`
+        },
+        body: JSON.stringify({
+          queries: [keyword],
+          sources: ['keyword_explorer']
+        })
+      });
+      
+      if (!mozResponse.ok) {
+        const errorText = await mozResponse.text();
+        console.error(`Moz API error (${mozResponse.status}): ${errorText}`);
+        throw new Error(`Moz API request failed: ${errorText}`);
+      }
+      
+      const mozData = await mozResponse.json();
+      console.log(`Moz API data for "${keyword}":`, JSON.stringify(mozData, null, 2));
+      
+      // Extract search volume from Moz response
+      if (mozData && 
+          mozData.results && 
+          mozData.results.length > 0 && 
+          mozData.results[0].keyword_explorer && 
+          mozData.results[0].keyword_explorer.data) {
+        
+        searchVolume = parseInt(mozData.results[0].keyword_explorer.data.volume) || 0;
+        console.log(`Successfully extracted real search volume from Moz API: ${searchVolume}`);
+      } else {
+        console.warn(`Could not find volume data in Moz API response for "${keyword}"`);
+      }
+    } catch (mozError) {
+      console.error(`Error getting search volume from Moz API: ${mozError.message}`);
+      console.error(`Will fall back to SerpAPI estimation`);
+    }
+
+    // Call SerpAPI to get CPC data
     const url = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(keyword)}&api_key=${SERPAPI_API_KEY}&google_domain=google.com&gl=us`
     
     console.log(`Calling SerpAPI with URL: ${url.substring(0, url.indexOf('api_key=') + 8)}[API_KEY_HIDDEN]`)
@@ -93,7 +160,6 @@ serve(async (req) => {
         )
       }
       
-      // For other errors, don't return mock data to make the error more obvious
       return new Response(
         JSON.stringify({ 
           error: 'SerpAPI request failed',
@@ -114,27 +180,36 @@ serve(async (req) => {
     const data = await response.json()
     console.log(`Successfully received data from SerpAPI for "${keyword}"`)
     
-    // Extract search volume and CPC from the response
-    let searchVolume = 0
-    let cpc = 0
-    
-    // Check for the search metadata which contains search volume info
-    if (data.search_metadata && data.search_metadata.total_results) {
-      // Convert string like "About 235,000 results" to a number
-      const totalResultsStr = data.search_metadata.total_results;
-      const numericResults = totalResultsStr.replace(/[^0-9]/g, '');
-      searchVolume = parseInt(numericResults, 10) || 0;
-      console.log(`Extracted search volume from total_results: ${searchVolume}`);
-    }
-    
-    // If no search volume from total_results, estimate from organic results
-    if (searchVolume === 0 && data.organic_results) {
-      // More results = higher search volume (approximate correlation)
-      searchVolume = data.organic_results.length * 10000;
-      console.log(`Estimated search volume from organic results: ${searchVolume}`);
+    // If we still don't have search volume from Moz API, fallback to estimation
+    if (searchVolume === 0) {
+      console.log(`No search volume from Moz API, using fallback estimation methods`)
+      
+      // Check for the search metadata which contains search volume info
+      if (data.search_metadata && data.search_metadata.total_results) {
+        // Convert string like "About 235,000 results" to a number
+        const totalResultsStr = data.search_metadata.total_results;
+        const numericResults = totalResultsStr.replace(/[^0-9]/g, '');
+        searchVolume = parseInt(numericResults, 10) || 0;
+        console.log(`Extracted search volume from total_results: ${searchVolume}`);
+      }
+      
+      // If no search volume from total_results, estimate from organic results
+      if (searchVolume === 0 && data.organic_results) {
+        // More results = higher search volume (approximate correlation)
+        searchVolume = data.organic_results.length * 10000;
+        console.log(`Estimated search volume from organic results: ${searchVolume}`);
+      }
+      
+      // If still no values, use reasonable fallbacks based on keyword competitiveness
+      if (searchVolume === 0) {
+        // Default fallback based on keyword length (longer = less popular)
+        searchVolume = Math.max(10000 - (keyword.length * 500), 1000);
+        console.log(`Using fallback search volume: ${searchVolume}`);
+      }
     }
     
     // Extract CPC from shopping_results if available
+    let cpc = 0;
     if (data.shopping_results && data.shopping_results.length > 0) {
       // Get average price from shopping results for a rough CPC estimate
       const prices = data.shopping_results
@@ -160,13 +235,7 @@ serve(async (req) => {
       console.log(`Estimated CPC from ads: ${cpc}`);
     }
     
-    // If still no values, use reasonable fallbacks based on keyword competitiveness
-    if (searchVolume === 0) {
-      // Default fallback based on keyword length (longer = less popular)
-      searchVolume = Math.max(10000 - (keyword.length * 500), 1000);
-      console.log(`Using fallback search volume: ${searchVolume}`);
-    }
-    
+    // If still no CPC, use fallback
     if (cpc === 0) {
       // Default CPC fallback based on keyword characteristics
       const commercialTerms = ['buy', 'price', 'cost', 'service', 'best', 'top', 'cheap', 'affordable'];
