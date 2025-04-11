@@ -46,7 +46,7 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
         const cities = parseCitiesCsv(content);
         
         if (cities.length === 0) {
-          throw new Error("No valid city data found in the CSV. Make sure your file has 'city' and 'population' columns.");
+          throw new Error("No valid city data found in the CSV. Make sure your file has 'city', 'state', and 'population' columns.");
         }
         
         console.log(`Uploading ${cities.length} cities to Supabase`);
@@ -243,7 +243,7 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
       </div>
       <p className="text-xs text-muted-foreground mt-1">
         {type === "cities" 
-          ? "CSV should have columns for 'city' and 'population'" 
+          ? "CSV should have columns for 'city', 'state' (2-letter code), and 'population'" 
           : "CSV should have a 'name' column for niches"}
       </p>
       <div className="text-xs text-muted-foreground mt-1">

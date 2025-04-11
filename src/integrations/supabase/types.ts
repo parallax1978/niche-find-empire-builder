@@ -14,19 +14,19 @@ export type Database = {
           id: number
           name: string
           population: number
-          state: string | null
+          state: string
         }
         Insert: {
           id?: number
           name: string
           population: number
-          state?: string | null
+          state: string
         }
         Update: {
           id?: number
           name?: string
           population?: number
-          state?: string | null
+          state?: string
         }
         Relationships: []
       }

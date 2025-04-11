@@ -3,7 +3,7 @@ export interface City {
   id: number;
   name: string;
   population: number;
-  state: string | null;
+  state: string; // Now required (2-letter code)
 }
 
 export interface Niche {
