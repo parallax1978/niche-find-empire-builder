@@ -96,12 +96,20 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
     } else {
       const searchTerm = citySearchValue.toLowerCase().trim();
       
-      // FIXED: Search through ALL cities in the cities array
+      // Directly log the full cities array to debug
+      console.log("All cities length:", cities.length);
+      
+      // Search ALL cities without any pre-filtering
       const matches = cities.filter(city => 
         city.name.toLowerCase().includes(searchTerm)
       );
       
       console.log(`Search for "${searchTerm}" found ${matches.length} total matches`);
+      // Log the first and last few matches to debug
+      if (matches.length > 0) {
+        console.log("First 3 matches:", matches.slice(0, 3));
+        console.log("Last 3 matches:", matches.slice(-3));
+      }
       
       // Display up to 100 matches
       setFilteredCities(matches.slice(0, 100));
@@ -289,6 +297,11 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                         {citySearchValue.trim() !== "" && filteredCities.length >= 100 && (
                           <div className="py-2 px-2 text-xs text-center text-muted-foreground">
                             Showing first 100 matches. Try a more specific search if needed.
+                          </div>
+                        )}
+                        {citySearchValue.trim() !== "" && filteredCities.length === 0 && (
+                          <div className="py-2 px-2 text-xs text-center text-muted-foreground">
+                            No cities found. Try a different search term.
                           </div>
                         )}
                       </Command>
