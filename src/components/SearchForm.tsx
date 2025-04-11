@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Card, 
@@ -32,7 +31,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   const [selectedNiche, setSelectedNiche] = useState<Niche | undefined>(undefined);
   const [selectedCity, setSelectedCity] = useState<City | undefined>(undefined);
   const [searchVolumeRange, setSearchVolumeRange] = useState([0, 1000000]);
-  const [cpcRange, setCpcRange] = useState([0, 50]);
+  const [cpcRange, setCpcRange] = useState([0, 1000]);
   const [populationMin, setPopulationMin] = useState<string>("");
   const [populationMax, setPopulationMax] = useState<string>("");
   const [isPopulationEnabled, setIsPopulationEnabled] = useState(false);
@@ -42,7 +41,6 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   const [openCityPopover, setOpenCityPopover] = useState(false);
   const { toast } = useToast();
 
-  // Load niches and cities on component mount
   useEffect(() => {
     const loadData = async () => {
       setIsLoading1(true);
@@ -299,7 +297,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                 <Slider
                   id="cpc"
                   min={0}
-                  max={50}
+                  max={1000}
                   step={0.1}
                   value={cpcRange}
                   onValueChange={setCpcRange}
