@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   Card, 
@@ -92,24 +93,33 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
     } else {
       const searchTerm = citySearchValue.toLowerCase().trim();
       
-      const filtered = cities
-        .filter(city => 
-          city.name.toLowerCase().includes(searchTerm)
-        )
-        .slice(0, 100); // Still limit display results to 100 for performance
+      // Don't limit the search, just the display results
+      const allMatches = cities.filter(city => 
+        city.name.toLowerCase().includes(searchTerm)
+      );
+      
+      // Only limit display results to 100 after filtering
+      const filtered = allMatches.slice(0, 100);
       
       setFilteredCities(filtered);
       
-      console.log(`Search for "${searchTerm}" found ${filtered.length} results`);
+      console.log(`Search for "${searchTerm}" found ${allMatches.length} results (showing first ${filtered.length})`);
       
-      if (filtered.length < 10) {
-        console.log("Found cities:", filtered.map(c => c.name));
+      if (allMatches.length < 10) {
+        console.log("Found cities:", allMatches.map(c => c.name));
       }
       
+      // Extra debugging for cartersville specifically
       if (searchTerm === "cartersville" || searchTerm.includes("cartersville")) {
+        console.log("Searching specifically for cartersville");
+        
+        const allCityNames = cities.map(city => city.name.toLowerCase());
+        console.log("Last 10 cities in database:", allCityNames.slice(-10));
+        
         const hasCartersville = cities.some(city => 
           city.name.toLowerCase().includes("cartersville")
         );
+        
         console.log(`Is "cartersville" in the cities array? ${hasCartersville}`);
         
         if (hasCartersville) {
@@ -117,6 +127,12 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
             city.name.toLowerCase().includes("cartersville")
           );
           console.log("Cartersville city data:", cartersvilleCity);
+        } else {
+          // Check partial matches
+          const partialMatches = cities.filter(city => 
+            city.name.toLowerCase().includes("carter")
+          );
+          console.log("Cities containing 'carter':", partialMatches.map(c => c.name));
         }
       }
     }
@@ -281,6 +297,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                                 onSelect={() => {
                                   setSelectedCity(city);
                                   setOpenCityPopover(false);
+                                  setCitySearchValue("");
                                 }}
                               >
                                 <Check
@@ -293,12 +310,12 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                               </CommandItem>
                             ))}
                           </CommandGroup>
-                          {citySearchValue.trim() === "" && cities.length > 100 && (
-                            <div className="py-2 px-2 text-xs text-center text-muted-foreground">
-                              Showing top 100 cities by population. Type to search for more.
-                            </div>
-                          )}
                         </CommandList>
+                        {citySearchValue.trim() === "" && cities.length > 100 && (
+                          <div className="py-2 px-2 text-xs text-center text-muted-foreground">
+                            Showing top 100 cities by population. Type to search for more.
+                          </div>
+                        )}
                       </Command>
                     </PopoverContent>
                   </Popover>
