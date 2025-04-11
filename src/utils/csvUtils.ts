@@ -1,3 +1,4 @@
+
 /**
  * Parses CSV content to extract city data
  * @param content CSV content as string
@@ -29,7 +30,7 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
   
   // If there's a header, determine column positions
   let cityIndex = 0;
-  let populationIndex = 3; // Default for "city, state, state code, population" format
+  let populationIndex = 1; // Default for common format with just two columns
   
   if (hasHeader) {
     const headers = headerRow.split(',').map(h => h.trim().toLowerCase());
@@ -82,13 +83,13 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
       }
       
       if (values.length >= Math.max(cityIndex + 1, populationIndex + 1)) {
-        const cityName = values[cityIndex]?.trim().replace(/["']/g, ''); // Remove quotes if present
+        const cityName = values[cityIndex]?.trim().replace(/["']/g, ''); // Remove quotes
         
-        // FIX: More robust population parsing
-        // Take the raw population string and strip any non-numeric characters except digits
-        const populationStr = values[populationIndex]?.trim().replace(/["']/g, ''); // Remove quotes
+        // Get the raw population string
+        let populationStr = values[populationIndex]?.trim().replace(/["']/g, ''); // Remove quotes
         
-        if (i < 5 || (populationStr === '' && i < 275)) {
+        // Debug logging for the first few rows
+        if (i < 5) {
           console.log(`Row ${i+1} raw population string: "${populationStr}"`);
         }
         
@@ -104,9 +105,10 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
           continue;
         }
         
-        // Convert the population string to a number - This is the critical fix
-        // We'll ensure the ENTIRE number is parsed, not just the first digit
-        const population = parseInt(populationStr.replace(/[^\d]/g, ''), 10);
+        // Convert the population string to a number
+        // IMPORTANT: Make sure we're using Number() instead of parseInt() 
+        // parseInt() can sometimes parse only the first part of a number
+        const population = Number(populationStr.replace(/[^\d]/g, ''));
         
         if (i < 5) {
           console.log(`Row ${i+1} parsed population: ${population}`);
