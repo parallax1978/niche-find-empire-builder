@@ -88,19 +88,15 @@ serve(async (req) => {
     try {
       console.log(`Fetching search volume from Moz API for keyword: "${keyword}"`)
       
-      // Encode the API credentials
-      const credentials = btoa(`${MOZ_API_KEY}:${MOZ_API_KEY}`);
-      
-      // Call Moz API to get keyword volume data
-      const mozResponse = await fetch('https://moz.com/api/metrics', {
+      // Call Moz Keyword Explorer API endpoint (updated to correct endpoint)
+      const mozResponse = await fetch('https://moz.com/api/keyword-explorer/search-volume', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Basic ${credentials}`
+          'Authorization': `Bearer ${MOZ_API_KEY}`
         },
         body: JSON.stringify({
-          queries: [keyword],
-          sources: ['keyword_explorer']
+          keywords: [keyword]
         })
       });
       
@@ -113,14 +109,9 @@ serve(async (req) => {
       const mozData = await mozResponse.json();
       console.log(`Moz API data for "${keyword}":`, JSON.stringify(mozData, null, 2));
       
-      // Extract search volume from Moz response
-      if (mozData && 
-          mozData.results && 
-          mozData.results.length > 0 && 
-          mozData.results[0].keyword_explorer && 
-          mozData.results[0].keyword_explorer.data) {
-        
-        searchVolume = parseInt(mozData.results[0].keyword_explorer.data.volume) || 0;
+      // Extract search volume from Moz response using the correct structure
+      if (mozData && mozData.data && mozData.data.length > 0) {
+        searchVolume = parseInt(mozData.data[0].volume) || 0;
         console.log(`Successfully extracted real search volume from Moz API: ${searchVolume}`);
       } else {
         console.warn(`Could not find volume data in Moz API response for "${keyword}"`);
