@@ -8,6 +8,7 @@ export const fetchCities = async (): Promise<City[]> => {
     const { data, error } = await supabase
       .from('cities')
       .select('*')
+      .order('population', { ascending: false })
       .order('name');
     
     if (error) {
