@@ -50,7 +50,7 @@ serve(async (req) => {
     const mozUrl = 'https://api.moz.com/v2/keyword_metrics'
     const mozBody = JSON.stringify({
       usage_action: 'data.keyword.metrics.fetch',
-      keywords: [keyword]
+      targets: [keyword]
     })
     
     console.log('Sending request to Moz API...')
