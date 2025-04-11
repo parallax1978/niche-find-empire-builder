@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Container } from "@/components/ui/container";
 import SearchForm from "@/components/SearchForm";
@@ -49,14 +48,8 @@ const Index = () => {
     } catch (error) {
       console.error("Search error:", error);
       
-      // Check if the error message contains API key error
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      if (errorMessage.includes('API key') || errorMessage.includes('MOZ_API_KEY')) {
-        setApiError("API configuration error. Please check your Supabase function secrets for SERPAPI_API_KEY and MOZ_API_KEY.");
-      } else {
-        setApiError(errorMessage);
-      }
+      setApiError(errorMessage);
       
       toast({
         title: "Search failed",
