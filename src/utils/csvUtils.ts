@@ -82,20 +82,22 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
       if (values.length >= Math.max(cityIndex + 1, populationIndex + 1)) {
         const cityName = values[cityIndex]?.trim().replace(/["']/g, ''); // Remove quotes if present
         
-        // Even more aggressive population cleaning
-        let populationStr = values[populationIndex]?.trim().replace(/["']/g, ''); // Remove quotes
+        // FIX: More robust population parsing
+        // Take the raw population string and strip any non-numeric characters except digits
+        const populationStr = values[populationIndex]?.trim().replace(/["']/g, ''); // Remove quotes
         
-        // Remove any non-numeric characters except for commas and periods
-        populationStr = populationStr.replace(/[^\d,\.]/g, '');
+        // Log the raw population string for debugging
+        if (i < 5) {
+          console.log(`Row ${i+1} raw population string: "${populationStr}"`);
+        }
         
-        // Replace commas with nothing (for numbers like 100,000)
-        populationStr = populationStr.replace(/,/g, '');
+        // Convert the population string to a number - This is the critical fix
+        // We'll ensure the ENTIRE number is parsed, not just the first digit
+        const population = parseInt(populationStr.replace(/[^\d]/g, ''), 10);
         
-        // Try to convert to a number first
-        const populationNum = Number(populationStr);
-        
-        // Only parse as integer if it's a valid number
-        const population = !isNaN(populationNum) ? Math.round(populationNum) : NaN;
+        if (i < 5) {
+          console.log(`Row ${i+1} parsed population: ${population}`);
+        }
         
         if (cityName && !isNaN(population)) {
           results.push({ 
@@ -111,7 +113,6 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
           console.log(`Skipping row ${i+1} due to invalid data:`, { 
             cityName, 
             populationStr,
-            populationNum,
             population: isNaN(population) ? 'NaN' : population 
           });
         }
