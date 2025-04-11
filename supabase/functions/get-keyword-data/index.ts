@@ -33,8 +33,9 @@ serve(async (req) => {
 
     const mozHeaders = {
       'Content-Type': 'application/json',
-      'Authorization': `Basic ${btoa(MOZ_API_KEY + ':')}`,
-      'Accept': 'application/json'
+      'Authorization': `Bearer ${MOZ_API_KEY}`,
+      'Accept': 'application/json',
+      'User-Agent': 'NicheFindEmpireBuilder/1.0'
     }
 
     console.log('Sending request to Moz API...')
@@ -42,7 +43,8 @@ serve(async (req) => {
     const mozResponse = await fetch(MOZ_API_URL, {
       method: 'POST',
       headers: mozHeaders,
-      body: mozBody
+      body: mozBody,
+      cache: 'no-store'
     })
 
     if (!mozResponse.ok) {
