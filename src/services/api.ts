@@ -18,22 +18,16 @@ export const fetchCities = async (): Promise<City[]> => {
     console.log("Fetched cities:", data);
     console.log("Number of cities:", data?.length);
     
-    return data || [];
+    if (!data || data.length === 0) {
+      throw new Error("No cities found in the database");
+    }
+    
+    return data;
   } catch (error) {
     console.error("Error in fetchCities:", error);
-    // Fallback to mock data in case of error
-    return MOCK_CITIES;
+    throw error; // Propagate the error instead of falling back to mock data
   }
 };
-
-// Mock cities data for fallback
-const MOCK_CITIES: City[] = [
-  { id: 1, name: "New York", population: 8336817 },
-  { id: 2, name: "Los Angeles", population: 3979576 },
-  { id: 3, name: "Chicago", population: 2693976 },
-  { id: 4, name: "Houston", population: 2320268 },
-  { id: 5, name: "Phoenix", population: 1680992 }
-];
 
 // Fetch niches from the database
 export const fetchNiches = async (): Promise<Niche[]> => {
@@ -49,49 +43,38 @@ export const fetchNiches = async (): Promise<Niche[]> => {
     }
     
     console.log("Fetched niches:", data);
-    return data || [];
+    
+    if (!data || data.length === 0) {
+      throw new Error("No niches found in the database");
+    }
+    
+    return data;
   } catch (error) {
     console.error("Error in fetchNiches:", error);
-    // Fallback to mock data in case of error
-    return MOCK_NICHES;
+    throw error; // Propagate the error instead of falling back to mock data
   }
 };
-
-// Mock niches data for fallback
-const MOCK_NICHES: Niche[] = [
-  { id: 1, name: "Plumber" },
-  { id: 2, name: "Electrician" },
-  { id: 3, name: "Dentist" },
-  { id: 4, name: "Lawyer" },
-  { id: 5, name: "Accountant" }
-];
 
 // Search for niches based on the provided criteria
 export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordResult[]> => {
   try {
-    // Simulate an API call with a delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
     // In a real application, this would be a call to your backend or a third-party API
-    // For now, we'll generate some mock data based on the search criteria
+    // For now, we'll generate data based on actual cities and niches from the database
+    
+    // Get real city data if a specific city wasn't selected
+    const cities = criteria.city ? [criteria.city] : await fetchCities();
+    
+    // Get real niche data if a specific niche wasn't selected
+    const niches = criteria.niche ? [criteria.niche] : await fetchNiches();
+    
     const results: KeywordResult[] = [];
     
-    // Generate keywords based on niche and city if provided
-    const baseKeywords = criteria.niche 
-      ? [criteria.niche.name.toLowerCase()] 
-      : ['plumber', 'electrician', 'lawyer', 'dentist', 'accountant'];
-    
-    const locations = criteria.city 
-      ? [criteria.city.name] 
-      : ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'];
-    
-    // Generate combinations of keywords and locations
-    for (const keyword of baseKeywords) {
-      for (const location of locations) {
+    // Generate combinations of keywords and locations using real data
+    for (const niche of niches) {
+      for (const city of cities) {
         // Only include results that match the criteria
         const searchVolume = Math.floor(Math.random() * 900000) + 100000;
         const cpc = Math.random() * 49 + 1;
-        const population = criteria.city ? criteria.city.population : Math.floor(Math.random() * 8000000) + 100000;
         
         // Skip if doesn't meet criteria
         if (searchVolume < criteria.searchVolume.min || 
@@ -103,13 +86,13 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
         
         // Skip if population criteria doesn't match
         if (criteria.population && 
-            (population < criteria.population.min || 
-             population > criteria.population.max)) {
+            (city.population < criteria.population.min || 
+             city.population > criteria.population.max)) {
           continue;
         }
         
-        const fullKeyword = `${keyword} ${location}`;
-        const exactMatchDomain = `${keyword}${location.toLowerCase().replace(/\s+/g, '')}.com`;
+        const fullKeyword = `${niche.name.toLowerCase()} ${city.name}`;
+        const exactMatchDomain = `${niche.name.toLowerCase()}${city.name.toLowerCase().replace(/\s+/g, '')}.com`;
         const domainAvailable = Math.random() > 0.7; // 30% chance domain is available
         
         results.push({
@@ -117,7 +100,7 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
           keyword: fullKeyword,
           searchVolume,
           cpc,
-          population,
+          population: city.population,
           domainAvailable,
           domainLink: domainAvailable ? `https://domains.google.com/registrar/search?searchTerm=${exactMatchDomain}` : null,
           exactMatchDomain
@@ -128,6 +111,6 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
     return results;
   } catch (error) {
     console.error("Error searching niches:", error);
-    return [];
+    throw error; // Propagate the error instead of returning an empty array
   }
 };
