@@ -1,4 +1,3 @@
-
 /**
  * Parses CSV content to extract city data
  * @param content CSV content as string
@@ -7,6 +6,9 @@
 export const parseCitiesCsv = (content: string): { name: string; population: number }[] => {
   const lines = content.split('\n');
   const results: { name: string; population: number }[] = [];
+  let emptyPopulationCount = 0;
+  let successCount = 0;
+  let skippedCount = 0;
   
   if (lines.length === 0) {
     console.log("CSV file is empty");
@@ -86,9 +88,20 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
         // Take the raw population string and strip any non-numeric characters except digits
         const populationStr = values[populationIndex]?.trim().replace(/["']/g, ''); // Remove quotes
         
-        // Log the raw population string for debugging
-        if (i < 5) {
+        if (i < 5 || (populationStr === '' && i < 275)) {
           console.log(`Row ${i+1} raw population string: "${populationStr}"`);
+        }
+        
+        // Check if population is empty
+        if (!populationStr) {
+          emptyPopulationCount++;
+          if (emptyPopulationCount === 1) {
+            console.log(`First empty population found at row ${i+1} for city "${cityName}"`);
+          }
+          
+          // Skip cities with empty population
+          skippedCount++;
+          continue;
         }
         
         // Convert the population string to a number - This is the critical fix
@@ -105,24 +118,42 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
             population
           });
           
+          successCount++;
+          
           // Log the first few parsed entries
           if (results.length <= 3) {
             console.log(`Parsed city: ${cityName}, population: ${population}`);
           }
         } else {
-          console.log(`Skipping row ${i+1} due to invalid data:`, { 
-            cityName, 
-            populationStr,
-            population: isNaN(population) ? 'NaN' : population 
-          });
+          skippedCount++;
+          if (skippedCount < 10) {
+            console.log(`Skipping row ${i+1} due to invalid data:`, { 
+              cityName, 
+              populationStr,
+              population: isNaN(population) ? 'NaN' : population 
+            });
+          }
         }
       } else {
-        console.log(`Skipping row ${i+1} due to insufficient columns. Expected at least ${Math.max(cityIndex + 1, populationIndex + 1)}, got ${values.length}`);
+        skippedCount++;
+        if (skippedCount < 10) {
+          console.log(`Skipping row ${i+1} due to insufficient columns. Expected at least ${Math.max(cityIndex + 1, populationIndex + 1)}, got ${values.length}`);
+        }
       }
     }
   }
   
-  console.log(`Successfully parsed ${results.length} cities`);
+  console.log(`CSV parsing summary:
+  Total lines: ${lines.length}
+  Successfully parsed: ${successCount} cities
+  Skipped: ${skippedCount} lines
+  Empty population values: ${emptyPopulationCount}
+  `);
+  
+  if (emptyPopulationCount > 0) {
+    console.log(`Note: ${emptyPopulationCount} cities were skipped because they had empty population values.
+    You may want to check your CSV file and make sure all cities have population values.`);
+  }
   
   return results;
 };
