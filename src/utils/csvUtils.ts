@@ -1,4 +1,3 @@
-
 import { City, Niche } from '@/types';
 
 export const parseCitiesCsv = (content: string): City[] => {
@@ -25,22 +24,13 @@ export const parseCitiesCsv = (content: string): City[] => {
   
   const startIndex = hasHeader ? 1 : 0;
   
-  // EXPLICITLY set the column indexes to match the desired order: City (first), State (second), Population (third)
-  let cityIndex = 0;
-  let stateIndex = 1;
-  let populationIndex = 2;
+  // EXPLICITLY set the column indexes to force the desired order: City (first), State (second), Population (third)
+  // This ordering is now mandatory - we assume the CSV is in this exact order
+  const cityIndex = 0;    // First column is City
+  const stateIndex = 1;   // Second column is State
+  const populationIndex = 2;  // Third column is Population
   
-  if (hasHeader) {
-    const headers = headerRow.split(',').map(h => h.trim().toLowerCase());
-    console.log("CSV headers:", headers);
-    
-    // Flexible header detection, but prioritize the order: City, State, Population
-    cityIndex = headers.indexOf('city') !== -1 ? headers.indexOf('city') : 0;
-    stateIndex = headers.indexOf('state') !== -1 ? headers.indexOf('state') : 1;
-    populationIndex = headers.indexOf('population') !== -1 ? headers.indexOf('population') : 2;
-    
-    console.log(`Using cityIndex: ${cityIndex}, stateIndex: ${stateIndex}, populationIndex: ${populationIndex}`);
-  }
+  console.log(`Using fixed column order: City (index ${cityIndex}), State (index ${stateIndex}), Population (index ${populationIndex})`);
   
   for (let i = startIndex; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -49,7 +39,7 @@ export const parseCitiesCsv = (content: string): City[] => {
       const delimiter = line.includes(';') ? ';' : ',';
       const values = line.split(delimiter).map(val => val.trim());
       
-      if (values.length >= Math.max(cityIndex + 1, stateIndex + 1, populationIndex + 1)) {
+      if (values.length >= 3) { // We need at least 3 columns for City, State, Population
         const cityName = values[cityIndex]?.trim().replace(/["']/g, '');
         
         // Process the state - ensure it's 2 characters
@@ -103,6 +93,7 @@ export const parseCitiesCsv = (content: string): City[] => {
           skippedCount++;
         }
       } else {
+        console.log(`Row ${i+1} has insufficient columns (needed at least 3, got ${values.length})`);
         skippedCount++;
       }
     }
