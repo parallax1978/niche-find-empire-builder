@@ -54,20 +54,37 @@ serve(async (req) => {
     })
     
     console.log('Sending request to Moz API...')
+    console.log('Making Moz API request with body:', mozBody);
+    
     const mozResponse = await fetch(mozUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${MOZ_API_KEY}`,
-        'User-Agent': 'Mozilla/5.0'
+        'Accept': 'application/json',
+        'User-Agent': 'RankAndRentNicheFinder/1.0'
       },
       body: mozBody
     })
     
+    const responseText = await mozResponse.text();
+    console.log('Raw Moz API response:', responseText);
+    
     if (!mozResponse.ok) {
-      const errorText = await mozResponse.text()
-      console.error(`Moz API error (${mozResponse.status}):`, errorText)
-      throw new Error(`Moz API returned status ${mozResponse.status}: ${errorText}`)
+      console.error(`Moz API error (${mozResponse.status}):`, responseText);
+      throw new Error(`Moz API returned status ${mozResponse.status}: ${responseText}`);
+    }
+    
+    let mozData;
+    try {
+      mozData = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Failed to parse Moz API response:', e);
+      throw new Error('Invalid JSON response from Moz API');
+    }
+    
+    if (!mozData || typeof mozData !== 'object') {
+      throw new Error('Unexpected response format from Moz API');
     }
     
     const mozData = await mozResponse.json()
