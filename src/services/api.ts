@@ -82,22 +82,7 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
     if (data.error) {
       // Log the specific error message
       console.error(`API reported error for "${keyword}":`, data.error, data.details || '');
-      
-      // Check if we're using mock data (because of an invalid API key)
-      if (data.mockDataUsed) {
-        console.warn(`Using mock data provided by the API for "${keyword}" due to: ${data.error}`);
-        console.warn(`API Key issue: ${data.details}`);
-        
-        // Return the mock data, but flag it clearly
-        return {
-          searchVolume: data.searchVolume,
-          cpc: data.cpc,
-          mockDataUsed: true
-        };
-      } else {
-        // If the API returned an error but didn't provide mock data, throw the error
-        throw new Error(`API error: ${data.error} - ${data.details || ''}`);
-      }
+      throw new Error(`API error: ${data.error} - ${data.details || ''}`);
     }
     
     // If we got here, we have real data

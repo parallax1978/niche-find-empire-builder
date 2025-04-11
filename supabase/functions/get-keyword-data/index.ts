@@ -23,27 +23,6 @@ serve(async (req) => {
       })
     }
 
-    // Validate API key exists and isn't empty
-    if (!SERPAPI_API_KEY || SERPAPI_API_KEY.trim() === '') {
-      console.error('SerpAPI key is not configured in environment variables')
-      return new Response(
-        JSON.stringify({ 
-          error: 'SerpAPI key is not configured',
-          details: 'The SERPAPI_API_KEY secret is either missing or empty in your Supabase edge function secrets',
-          mockDataUsed: true,
-          searchVolume: Math.floor(Math.random() * 900000) + 100000,
-          cpc: Math.random() * 49 + 1
-        }),
-        { 
-          status: 200, 
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders 
-          } 
-        }
-      )
-    }
-
     // Get keyword from request body
     const { keyword } = await req.json() as RequestBody
 
@@ -52,6 +31,27 @@ serve(async (req) => {
         JSON.stringify({ error: 'Keyword is required' }),
         { 
           status: 400, 
+          headers: { 
+            'Content-Type': 'application/json',
+            ...corsHeaders 
+          } 
+        }
+      )
+    }
+
+    // Validate API key exists and isn't empty
+    if (!SERPAPI_API_KEY || SERPAPI_API_KEY.trim() === '') {
+      console.error('SerpAPI key is not configured in environment variables')
+      
+      // Return an informative error without mock data to make it obvious
+      return new Response(
+        JSON.stringify({ 
+          error: 'SerpAPI key is not configured',
+          details: 'The SERPAPI_API_KEY secret is missing or empty in your Supabase edge function secrets',
+          mockDataUsed: false
+        }),
+        { 
+          status: 500, 
           headers: { 
             'Content-Type': 'application/json',
             ...corsHeaders 
@@ -81,12 +81,10 @@ serve(async (req) => {
             error: 'Invalid SerpAPI API key',
             details: 'The SERPAPI_API_KEY in your Supabase secrets is invalid. Please verify your API key at https://serpapi.com/manage-api-key',
             status: response.status,
-            mockDataUsed: true,
-            searchVolume: Math.floor(Math.random() * 900000) + 100000,
-            cpc: Math.random() * 49 + 1
+            mockDataUsed: false
           }),
           { 
-            status: 200, 
+            status: 500, 
             headers: { 
               'Content-Type': 'application/json',
               ...corsHeaders 
@@ -95,43 +93,22 @@ serve(async (req) => {
         )
       }
       
-      // For other errors, return mock data
-      if (response.status === 401 || response.status >= 500) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Failed to fetch data from SerpAPI',
-            details: errorText,
-            status: response.status,
-            mockDataUsed: true,
-            searchVolume: Math.floor(Math.random() * 900000) + 100000,
-            cpc: Math.random() * 49 + 1
-          }),
-          { 
-            status: 200, 
-            headers: { 
-              'Content-Type': 'application/json',
-              ...corsHeaders 
-            } 
-          }
-        )
-      } else {
-        // For other errors, don't return mock data to make the error more obvious
-        return new Response(
-          JSON.stringify({ 
-            error: 'SerpAPI request failed',
-            details: errorText,
-            status: response.status,
-            mockDataUsed: false
-          }),
-          { 
-            status: response.status, 
-            headers: { 
-              'Content-Type': 'application/json',
-              ...corsHeaders 
-            } 
-          }
-        )
-      }
+      // For other errors, don't return mock data to make the error more obvious
+      return new Response(
+        JSON.stringify({ 
+          error: 'SerpAPI request failed',
+          details: errorText,
+          status: response.status,
+          mockDataUsed: false
+        }),
+        { 
+          status: response.status, 
+          headers: { 
+            'Content-Type': 'application/json',
+            ...corsHeaders 
+          } 
+        }
+      )
     }
 
     const data = await response.json()
@@ -220,12 +197,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        mockDataUsed: true,
-        searchVolume: Math.floor(Math.random() * 900000) + 100000,
-        cpc: Math.random() * 49 + 1
+        mockDataUsed: false
       }),
       { 
-        status: 200, 
+        status: 500, 
         headers: { 
           'Content-Type': 'application/json',
           ...corsHeaders 

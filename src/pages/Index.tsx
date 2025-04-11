@@ -87,7 +87,7 @@ const Index = () => {
       <Container className="py-8">
         <div className="grid grid-cols-1 gap-8">
           {usingMockData && (
-            <Alert variant="warning" className="bg-amber-50 border-amber-200">
+            <Alert variant="destructive" className="bg-amber-50 border-amber-200">
               <AlertTriangle className="h-4 w-4 text-amber-600" />
               <AlertDescription className="text-amber-800">
                 <strong>Using mock data:</strong> Please configure a valid SerpAPI key in your Supabase secrets to get real search volume and CPC data. 
