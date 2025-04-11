@@ -9,15 +9,16 @@ interface RequestBody {
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, X-Client-Info',
+  'Access-Control-Max-Age': '86400',
 }
 
 serve(async (req) => {
   // Handle preflight CORS
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
+    return new Response('ok', {
+      status: 200,
       headers: corsHeaders
     })
   }
