@@ -4,9 +4,9 @@
  * @param content CSV content as string
  * @returns Array of parsed city objects
  */
-export const parseCitiesCsv = (content: string): { name: string; population: number }[] => {
+export const parseCitiesCsv = (content: string): { name: string; population: number; state?: string }[] => {
   const lines = content.split('\n');
-  const results: { name: string; population: number }[] = [];
+  const results: { name: string; population: number; state?: string }[] = [];
   let emptyPopulationCount = 0;
   let successCount = 0;
   let skippedCount = 0;
@@ -31,6 +31,7 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
   // If there's a header, determine column positions
   let cityIndex = 0;
   let populationIndex = 1; // Default for common format with just two columns
+  let stateIndex = -1; // Default to -1 if no state column is found
   
   if (hasHeader) {
     const headers = headerRow.split(',').map(h => h.trim().toLowerCase());
@@ -67,9 +68,25 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
     } else {
       console.log("'population' column found at index:", populationIndex);
     }
+    
+    // Look for a state column
+    stateIndex = headers.indexOf('state');
+    if (stateIndex === -1) {
+      stateIndex = headers.indexOf('st');
+      if (stateIndex === -1) {
+        stateIndex = headers.indexOf('province');
+        if (stateIndex !== -1) {
+          console.log("'province' column found at index:", stateIndex);
+        }
+      } else {
+        console.log("'st' column found at index:", stateIndex);
+      }
+    } else {
+      console.log("'state' column found at index:", stateIndex);
+    }
   }
   
-  console.log(`Using cityIndex: ${cityIndex}, populationIndex: ${populationIndex}`);
+  console.log(`Using cityIndex: ${cityIndex}, populationIndex: ${populationIndex}, stateIndex: ${stateIndex}`);
   
   for (let i = startIndex; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -110,21 +127,36 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
         // parseInt() can sometimes parse only the first part of a number
         const population = Number(populationStr.replace(/[^\d]/g, ''));
         
+        // Get state if available
+        let state = undefined;
+        if (stateIndex !== -1 && stateIndex < values.length) {
+          state = values[stateIndex]?.trim().replace(/["']/g, '');
+          // Ensure state is a 2-letter code if present
+          if (state && state.length > 2) {
+            // Try to convert to 2-letter code if possible
+            // This is a simple approach - in a real app, you might want to use a state name to code mapping
+            state = state.substring(0, 2).toUpperCase();
+          } else if (state) {
+            state = state.toUpperCase();
+          }
+        }
+        
         if (i < 5) {
-          console.log(`Row ${i+1} parsed population: ${population}`);
+          console.log(`Row ${i+1} parsed population: ${population}, state: ${state || 'N/A'}`);
         }
         
         if (cityName && !isNaN(population)) {
           results.push({ 
             name: cityName,
-            population
+            population,
+            ...(state ? { state } : {})
           });
           
           successCount++;
           
           // Log the first few parsed entries
           if (results.length <= 3) {
-            console.log(`Parsed city: ${cityName}, population: ${population}`);
+            console.log(`Parsed city: ${cityName}, population: ${population}, state: ${state || 'N/A'}`);
           }
         } else {
           skippedCount++;
@@ -132,7 +164,8 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
             console.log(`Skipping row ${i+1} due to invalid data:`, { 
               cityName, 
               populationStr,
-              population: isNaN(population) ? 'NaN' : population 
+              population: isNaN(population) ? 'NaN' : population,
+              state: state || 'N/A'
             });
           }
         }

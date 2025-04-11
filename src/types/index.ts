@@ -3,6 +3,7 @@ export interface City {
   id: number;
   name: string;
   population: number;
+  state: string | null;
 }
 
 export interface Niche {

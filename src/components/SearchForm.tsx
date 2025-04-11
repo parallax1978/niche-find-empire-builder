@@ -260,7 +260,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                         disabled={cities.length === 0}
                       >
                         {selectedCity
-                          ? `${selectedCity.name} (${selectedCity.population.toLocaleString()})`
+                          ? `${selectedCity.name}${selectedCity.state ? `, ${selectedCity.state}` : ''} (${selectedCity.population.toLocaleString()})`
                           : cities.length === 0 
                             ? "No cities available" 
                             : "Select a city (optional)"}
@@ -293,7 +293,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                                     selectedCity?.id === city.id ? "opacity-100" : "opacity-0"
                                   )}
                                 />
-                                {city.name} ({city.population.toLocaleString()})
+                                {city.name}{city.state ? `, ${city.state}` : ''} ({city.population.toLocaleString()})
                               </CommandItem>
                             ))}
                           </CommandGroup>
