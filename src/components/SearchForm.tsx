@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Card, 
@@ -92,12 +91,15 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
     if (citySearchValue.trim() === "") {
       setFilteredCities(cities.slice(0, 100)); // Show top 100 cities when no search
     } else {
+      const searchTerm = citySearchValue.toLowerCase().trim();
       const filtered = cities
         .filter(city => 
-          city.name.toLowerCase().includes(citySearchValue.toLowerCase())
+          city.name.toLowerCase().includes(searchTerm)
         )
-        .slice(0, 100); // Limit to 100 results for performance
+        .slice(0, 100); // Still limit results to 100 for performance
       setFilteredCities(filtered);
+      
+      console.log(`Search for "${searchTerm}" found ${filtered.length} results`);
     }
   }, [citySearchValue, cities]);
 
