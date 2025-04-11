@@ -10,8 +10,17 @@ interface KeywordResponse {
   errorMessage?: string
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
 serve(async (req) => {
   try {
+    if (req.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
+    }
     const { keyword } = await req.json()
 
     if (!MOZ_API_KEY) {
@@ -63,7 +72,7 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify(response), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
     })
 
   } catch (error) {
@@ -78,7 +87,7 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify(errorResponse), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
       status: 422 // Return proper error status
     })
   }
