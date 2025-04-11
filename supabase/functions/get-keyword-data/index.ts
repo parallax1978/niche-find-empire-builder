@@ -23,13 +23,13 @@ serve(async (req) => {
       })
     }
 
-    // Check for API key
-    if (!SERPAPI_API_KEY) {
+    // Validate API key exists and isn't empty
+    if (!SERPAPI_API_KEY || SERPAPI_API_KEY.trim() === '') {
       console.error('SerpAPI key is not configured in environment variables')
       return new Response(
         JSON.stringify({ 
           error: 'SerpAPI key is not configured',
-          details: 'You need to set the SERPAPI_API_KEY in your Supabase edge function secrets',
+          details: 'The SERPAPI_API_KEY secret is either missing or empty in your Supabase edge function secrets',
           mockDataUsed: true,
           searchVolume: Math.floor(Math.random() * 900000) + 100000,
           cpc: Math.random() * 49 + 1
@@ -69,12 +69,33 @@ serve(async (req) => {
     console.log(`Calling SerpAPI with URL: ${url.substring(0, url.indexOf('api_key=') + 8)}[API_KEY_HIDDEN]`)
     const response = await fetch(url)
     
+    // Log full response for debugging if there's an error
     if (!response.ok) {
       const errorText = await response.text()
       console.error(`SerpAPI error (${response.status}): ${errorText}`)
       
-      // Only return mock data if it's an API key issue or server error
-      // This helps with debugging other potential issues
+      // Check specifically for invalid API key
+      if (response.status === 401 && errorText.includes("Invalid API key")) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Invalid SerpAPI API key',
+            details: 'The SERPAPI_API_KEY in your Supabase secrets is invalid. Please verify your API key at https://serpapi.com/manage-api-key',
+            status: response.status,
+            mockDataUsed: true,
+            searchVolume: Math.floor(Math.random() * 900000) + 100000,
+            cpc: Math.random() * 49 + 1
+          }),
+          { 
+            status: 200, 
+            headers: { 
+              'Content-Type': 'application/json',
+              ...corsHeaders 
+            } 
+          }
+        )
+      }
+      
+      // For other errors, return mock data
       if (response.status === 401 || response.status >= 500) {
         return new Response(
           JSON.stringify({ 

@@ -80,17 +80,27 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
     console.log(`Received data for keyword "${keyword}":`, data);
     
     if (data.error) {
+      // Log the specific error message
       console.error(`API reported error for "${keyword}":`, data.error, data.details || '');
       
-      // Log whether we're falling back to mock data
+      // Check if we're using mock data (because of an invalid API key)
       if (data.mockDataUsed) {
-        console.warn(`Using mock data provided by the API for "${keyword}"`);
+        console.warn(`Using mock data provided by the API for "${keyword}" due to: ${data.error}`);
+        console.warn(`API Key issue: ${data.details}`);
+        
+        // Return the mock data, but flag it clearly
+        return {
+          searchVolume: data.searchVolume,
+          cpc: data.cpc,
+          mockDataUsed: true
+        };
       } else {
         // If the API returned an error but didn't provide mock data, throw the error
         throw new Error(`API error: ${data.error} - ${data.details || ''}`);
       }
     }
     
+    // If we got here, we have real data
     return {
       searchVolume: data.searchVolume,
       cpc: data.cpc,
@@ -148,10 +158,13 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
             // Get real search volume and CPC data from SerpAPI
             const { searchVolume, cpc, mockDataUsed } = await fetchKeywordData(fullKeyword);
             
+            // Track which results are using real vs. mock data
             if (mockDataUsed) {
               mockDataCount++;
+              console.warn(`⚠️ Using mock data for "${fullKeyword}"`);
             } else {
               realDataCount++;
+              console.log(`✅ Using real data for "${fullKeyword}"`);
             }
             
             // Skip if doesn't meet search volume or CPC criteria
