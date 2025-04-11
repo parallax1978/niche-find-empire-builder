@@ -52,11 +52,19 @@ serve(async (req) => {
     const mozUrl = 'https://api.moz.com/v2/keyword_metrics'
     const mozBody = JSON.stringify({
       usage_action: 'data.keyword.metrics.volume.fetch',
-      targets: [keyword]
+      targets: [keyword],
+      locale: 'en-US'
     })
 
     console.log('Sending request to Moz API...')
-    console.log('Making Moz API request with body:', mozBody);
+    console.log('Making Moz API request with body:', mozBody)
+
+    // Log headers being sent
+    const mozHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': `Basic ${btoa(`${MOZ_API_KEY}:`)}`,
+    }
+    console.log('Moz API Headers:', JSON.stringify(mozHeaders, null, 2))
 
     const mozResponse = await fetch(mozUrl, {
       method: 'POST',
