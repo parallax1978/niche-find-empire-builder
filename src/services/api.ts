@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { City, Niche, SearchCriteria, KeywordResult } from "@/types";
 
@@ -55,6 +56,42 @@ export const fetchNiches = async (): Promise<Niche[]> => {
   }
 };
 
+// Fetch keyword data from SerpAPI using our edge function
+const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number, cpc: number }> => {
+  try {
+    console.log(`Fetching data for keyword: ${keyword}`);
+    
+    const response = await fetch(`https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ keyword }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Error fetching keyword data: ${errorText}`);
+      throw new Error(`Failed to fetch keyword data: ${errorText}`);
+    }
+    
+    const data = await response.json();
+    console.log(`Received data for keyword "${keyword}":`, data);
+    
+    return {
+      searchVolume: data.searchVolume,
+      cpc: data.cpc,
+    };
+  } catch (error) {
+    console.error(`Error fetching keyword data for "${keyword}":`, error);
+    // Fallback to random data if API fails
+    return {
+      searchVolume: Math.floor(Math.random() * 900000) + 100000,
+      cpc: Math.random() * 49 + 1,
+    };
+  }
+};
+
 // Search for niches based on the provided criteria
 export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordResult[]> => {
   try {
@@ -67,6 +104,10 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
     const niches = criteria.niche ? [criteria.niche] : await fetchNiches();
     
     const results: KeywordResult[] = [];
+    
+    // Process combinations in smaller batches to avoid overloading the API
+    const batchSize = 3; // Process in small batches
+    let currentBatch: Promise<KeywordResult>[] = [];
     
     // Generate combinations of keywords and locations using real data
     for (const niche of niches) {
@@ -83,36 +124,62 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
           }
         }
         
-        // Generate random search volume and CPC values for demonstration
-        const searchVolume = Math.floor(Math.random() * 900000) + 100000;
-        const cpc = Math.random() * 49 + 1;
-        
-        // Skip if doesn't meet search volume or CPC criteria
-        if (searchVolume < criteria.searchVolume.min || 
-            searchVolume > criteria.searchVolume.max ||
-            cpc < criteria.cpc.min || 
-            cpc > criteria.cpc.max) {
-          continue;
-        }
-        
+        // Generate the full keyword for searching
         const fullKeyword = `${niche.name.toLowerCase()} ${city.name}`;
         
         // Create exactMatchDomain without spaces and in lowercase
         const exactMatchDomain = `${niche.name.toLowerCase().replace(/\s+/g, '')}${city.name.toLowerCase().replace(/\s+/g, '')}.com`;
         
-        const domainAvailable = Math.random() > 0.7; // 30% chance domain is available
+        // Process keyword asynchronously
+        const processPromise = (async () => {
+          try {
+            // Get real search volume and CPC data from SerpAPI
+            const { searchVolume, cpc } = await fetchKeywordData(fullKeyword);
+            
+            // Skip if doesn't meet search volume or CPC criteria
+            if (searchVolume < criteria.searchVolume.min || 
+                searchVolume > criteria.searchVolume.max ||
+                cpc < criteria.cpc.min || 
+                cpc > criteria.cpc.max) {
+              return null;
+            }
+            
+            const domainAvailable = Math.random() > 0.7; // 30% chance domain is available
+            
+            return {
+              id: crypto.randomUUID(),
+              keyword: fullKeyword,
+              searchVolume,
+              cpc,
+              population: city.population,
+              domainAvailable,
+              domainLink: domainAvailable ? `https://domains.google.com/registrar/search?searchTerm=${exactMatchDomain}` : null,
+              exactMatchDomain
+            };
+          } catch (error) {
+            console.error(`Error processing keyword ${fullKeyword}:`, error);
+            return null;
+          }
+        })();
         
-        results.push({
-          id: crypto.randomUUID(),
-          keyword: fullKeyword,
-          searchVolume,
-          cpc,
-          population: city.population,
-          domainAvailable,
-          domainLink: domainAvailable ? `https://domains.google.com/registrar/search?searchTerm=${exactMatchDomain}` : null,
-          exactMatchDomain
-        });
+        currentBatch.push(processPromise);
+        
+        // When batch is full, wait for results and add to final results
+        if (currentBatch.length >= batchSize) {
+          const batchResults = await Promise.all(currentBatch);
+          results.push(...batchResults.filter(result => result !== null));
+          currentBatch = [];
+          
+          // Add a small delay between batches to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
       }
+    }
+    
+    // Process any remaining items in the last batch
+    if (currentBatch.length > 0) {
+      const batchResults = await Promise.all(currentBatch);
+      results.push(...batchResults.filter(result => result !== null));
     }
     
     console.log(`Generated ${results.length} results after applying all filters`);
