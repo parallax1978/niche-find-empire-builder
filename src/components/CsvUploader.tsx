@@ -1,3 +1,4 @@
+
 import { ChangeEvent, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,17 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
         
         console.log(`Uploading ${cities.length} cities to Supabase`);
         
+        // First, delete existing cities to avoid duplicates
+        const { error: deleteError } = await supabase
+          .from('cities')
+          .delete()
+          .neq('id', 0); // Delete all cities
+          
+        if (deleteError) {
+          console.error("Error deleting existing cities:", deleteError);
+          throw deleteError;
+        }
+        
         // Upload to Supabase
         let successCount = 0;
         for (const city of cities) {
@@ -73,18 +85,34 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
           throw new Error("No valid niche data found in the CSV");
         }
         
+        // Delete existing niches to avoid duplicates
+        const { error: deleteError } = await supabase
+          .from('niches')
+          .delete()
+          .neq('id', 0); // Delete all niches
+          
+        if (deleteError) {
+          console.error("Error deleting existing niches:", deleteError);
+          throw deleteError;
+        }
+        
         // Upload to Supabase
+        let successCount = 0;
         for (const niche of niches) {
           const { error } = await supabase
             .from('niches')
             .insert(niche);
             
-          if (error) throw error;
+          if (error) {
+            console.error("Error inserting niche:", niche.name, error);
+          } else {
+            successCount++;
+          }
         }
         
         toast({
           title: "Upload successful",
-          description: `${niches.length} niches have been imported`,
+          description: `${successCount} niches have been imported`,
         });
       }
       
