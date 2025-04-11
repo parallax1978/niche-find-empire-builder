@@ -73,7 +73,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
         
         setNiches(nichesData);
         setCities(citiesData);
-        // Show only top 100 cities initially when no search is performed
+        // Initial display - show cities sorted by population (largest first)
         setFilteredCities(citiesData.slice(0, 100));
         
         console.log(`Loaded ${citiesData.length} cities and ${nichesData.length} niches`);
@@ -96,20 +96,15 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
     } else {
       const searchTerm = citySearchValue.toLowerCase().trim();
       
-      // Search through ALL cities without limiting the search itself
+      // Search through ALL cities without limiting the search
       const matches = cities.filter(city => 
         city.name.toLowerCase().includes(searchTerm)
       );
       
-      // Only limit what we display to the user (not what we search through)
-      const displayResults = matches.slice(0, 100);
-      setFilteredCities(displayResults);
+      // Display up to 100 matches
+      setFilteredCities(matches.slice(0, 100));
       
-      console.log(`Search for "${searchTerm}" found ${matches.length} total matches (displaying first ${displayResults.length})`);
-      
-      if (matches.length === 0) {
-        console.log("No cities found matching that search term");
-      }
+      console.log(`Search for "${searchTerm}" found ${matches.length} total matches (displaying first ${Math.min(matches.length, 100)})`);
     }
   }, [citySearchValue, cities]);
 
