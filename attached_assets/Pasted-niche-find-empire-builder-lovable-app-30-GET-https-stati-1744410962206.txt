@@ -1,0 +1,146 @@
+niche-find-empire-builder.lovable.app/:30 
+            
+            
+           GET https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015 net::ERR_BLOCKED_BY_CLIENT
+index-Dwov98G_.js:159 Fetched niches: (853) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, …]
+index-Dwov98G_.js:159 Fetched cities: (546) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, …]
+index-Dwov98G_.js:159 Number of cities: 546
+index-Dwov98G_.js:209 Loaded 546 cities and 853 niches
+index-Dwov98G_.js:209 Population filter disabled
+index-Dwov98G_.js:209 Final search criteria: {
+  "niche": {
+    "id": 79,
+    "name": "ac repair"
+  },
+  "city": {
+    "id": 4,
+    "name": "Houston",
+    "population": 2300288,
+    "state": "TX"
+  },
+  "searchVolume": {
+    "min": 0,
+    "max": 1000000
+  },
+  "cpc": {
+    "min": 0,
+    "max": 1000
+  }
+}
+index-Dwov98G_.js:209 Starting search with criteria: {
+  "niche": {
+    "id": 79,
+    "name": "ac repair"
+  },
+  "city": {
+    "id": 4,
+    "name": "Houston",
+    "population": 2300288,
+    "state": "TX"
+  },
+  "searchVolume": {
+    "min": 0,
+    "max": 1000000
+  },
+  "cpc": {
+    "min": 0,
+    "max": 1000
+  }
+}
+index-Dwov98G_.js:159 Searching with criteria: {
+  "niche": {
+    "id": 79,
+    "name": "ac repair"
+  },
+  "city": {
+    "id": 4,
+    "name": "Houston",
+    "population": 2300288,
+    "state": "TX"
+  },
+  "searchVolume": {
+    "min": 0,
+    "max": 1000000
+  },
+  "cpc": {
+    "min": 0,
+    "max": 1000
+  }
+}
+index-Dwov98G_.js:159 Processing 1 niches and 1 cities
+index-Dwov98G_.js:159 Fetching data for keyword: ac repair Houston
+niche-find-empire-builder.lovable.app/:1 Access to fetch at 'https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data' from origin 'https://niche-find-empire-builder.lovable.app' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: It does not have HTTP ok status.
+index-Dwov98G_.js:159 
+            
+            
+           POST https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data net::ERR_FAILED
+RO @ index-Dwov98G_.js:159
+NO @ index-Dwov98G_.js:159
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data for "ac repair Houston": TypeError: Failed to fetch
+    at RO (index-Dwov98G_.js:159:54228)
+    at NO (index-Dwov98G_.js:159:55827)
+    at c (index-Dwov98G_.js:209:21636)
+    at q (index-Dwov98G_.js:209:9825)
+    at Object.AE (index-Dwov98G_.js:37:9855)
+    at IE (index-Dwov98G_.js:37:10009)
+    at DE (index-Dwov98G_.js:37:10066)
+    at Up (index-Dwov98G_.js:37:31446)
+    at my (index-Dwov98G_.js:37:31863)
+    at index-Dwov98G_.js:37:36776
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error processing ac repair Houston: TypeError: Failed to fetch
+    at RO (index-Dwov98G_.js:159:54228)
+    at NO (index-Dwov98G_.js:159:55827)
+    at c (index-Dwov98G_.js:209:21636)
+    at q (index-Dwov98G_.js:209:9825)
+    at Object.AE (index-Dwov98G_.js:37:9855)
+    at IE (index-Dwov98G_.js:37:10009)
+    at DE (index-Dwov98G_.js:37:10066)
+    at Up (index-Dwov98G_.js:37:31446)
+    at my (index-Dwov98G_.js:37:31863)
+    at index-Dwov98G_.js:37:36776
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Generated 0 results after applying all filters
+index-Dwov98G_.js:209 Search completed with 0 results
