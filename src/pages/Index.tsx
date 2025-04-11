@@ -15,28 +15,19 @@ const Index = () => {
   const [results, setResults] = useState<KeywordResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [usingMockData, setUsingMockData] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleSearch = async (criteria: SearchCriteria) => {
     setIsLoading(true);
     setHasSearched(true);
-    setUsingMockData(false);
+    setApiError(null);
     
     try {
       console.log("Starting search with criteria:", JSON.stringify(criteria, null, 2));
       
       const searchResults = await searchNiches(criteria);
       setResults(searchResults);
-      
-      // Check if we're using mock data
-      const mockDataResults = searchResults.filter(result => 
-        result.searchVolume > 100000 && 
-        result.cpc > 1.0 && 
-        result.cpc < 50.0
-      );
-      const isMostlyMockData = mockDataResults.length === searchResults.length && searchResults.length > 0;
-      setUsingMockData(isMostlyMockData);
       
       console.log(`Search completed with ${searchResults.length} results`);
       
@@ -57,6 +48,16 @@ const Index = () => {
       }
     } catch (error) {
       console.error("Search error:", error);
+      
+      // Check if the error message contains API key error
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (errorMessage.includes('API key') || errorMessage.includes('MOZ_API_KEY')) {
+        setApiError("API configuration error. Please check your Supabase function secrets for SERPAPI_API_KEY and MOZ_API_KEY.");
+      } else {
+        setApiError(errorMessage);
+      }
+      
       toast({
         title: "Search failed",
         description: "There was an error performing your search. Please try again.",
@@ -86,12 +87,11 @@ const Index = () => {
       
       <Container className="py-8">
         <div className="grid grid-cols-1 gap-8">
-          {usingMockData && (
-            <Alert variant="destructive" className="bg-amber-50 border-amber-200">
-              <AlertTriangle className="h-4 w-4 text-amber-600" />
-              <AlertDescription className="text-amber-800">
-                <strong>Using mock data:</strong> Please configure a valid SerpAPI key in your Supabase secrets to get real search volume and CPC data. 
-                Go to the Supabase dashboard and add a valid SERPAPI_API_KEY to your edge function secrets.
+          {apiError && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Error:</strong> {apiError}
               </AlertDescription>
             </Alert>
           )}

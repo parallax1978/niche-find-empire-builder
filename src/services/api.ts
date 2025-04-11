@@ -57,7 +57,7 @@ export const fetchNiches = async (): Promise<Niche[]> => {
 };
 
 // Fetch keyword data from SerpAPI using our edge function
-const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number, cpc: number, mockDataUsed: boolean }> => {
+const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number, cpc: number, errorMessage?: string }> => {
   try {
     console.log(`Fetching data for keyword: ${keyword}`);
     
@@ -85,11 +85,11 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
       throw new Error(`API error: ${data.error} - ${data.details || ''}`);
     }
     
-    // If we got here, we have real data
+    // Return the data
     return {
       searchVolume: data.searchVolume,
       cpc: data.cpc,
-      mockDataUsed: data.mockDataUsed || false
+      errorMessage: data.errorMessage
     };
   } catch (error) {
     console.error(`Error fetching keyword data for "${keyword}":`, error);
@@ -109,8 +109,6 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
     const niches = criteria.niche ? [criteria.niche] : await fetchNiches();
     
     const results: KeywordResult[] = [];
-    let mockDataCount = 0;
-    let realDataCount = 0;
     
     // Process combinations in smaller batches to avoid overloading the API
     const batchSize = 3; // Process in small batches
@@ -140,17 +138,8 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
         // Process keyword asynchronously
         const processPromise = (async () => {
           try {
-            // Get real search volume and CPC data from SerpAPI
-            const { searchVolume, cpc, mockDataUsed } = await fetchKeywordData(fullKeyword);
-            
-            // Track which results are using real vs. mock data
-            if (mockDataUsed) {
-              mockDataCount++;
-              console.warn(`⚠️ Using mock data for "${fullKeyword}"`);
-            } else {
-              realDataCount++;
-              console.log(`✅ Using real data for "${fullKeyword}"`);
-            }
+            // Get real search volume and CPC data from our API
+            const { searchVolume, cpc, errorMessage } = await fetchKeywordData(fullKeyword);
             
             // Skip if doesn't meet search volume or CPC criteria
             if (searchVolume < criteria.searchVolume.min || 
@@ -183,7 +172,7 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
         // When batch is full, wait for results and add to final results
         if (currentBatch.length >= batchSize) {
           const batchResults = await Promise.all(currentBatch);
-          results.push(...batchResults.filter(result => result !== null));
+          results.push(...batchResults.filter(result => result !== null) as KeywordResult[]);
           currentBatch = [];
           
           // Add a small delay between batches to avoid rate limiting
@@ -195,11 +184,10 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
     // Process any remaining items in the last batch
     if (currentBatch.length > 0) {
       const batchResults = await Promise.all(currentBatch);
-      results.push(...batchResults.filter(result => result !== null));
+      results.push(...batchResults.filter(result => result !== null) as KeywordResult[]);
     }
     
     console.log(`Generated ${results.length} results after applying all filters`);
-    console.log(`Data sources: ${realDataCount} real data points, ${mockDataCount} mock data points`);
     
     return results;
   } catch (error) {
