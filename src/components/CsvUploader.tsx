@@ -1,3 +1,4 @@
+
 import { ChangeEvent, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -55,18 +56,18 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
         setUploadProgress(`Deleting existing cities...`);
         console.log("Attempting to delete existing cities...");
         
-        const { error: deleteError, count: deleteCount } = await supabase
+        // Fixed: Remove the .select('count') part to avoid the aggregate function error
+        const { error: deleteError } = await supabase
           .from('cities')
           .delete()
-          .neq('id', 0) // Delete all cities
-          .select('count');
+          .neq('id', 0); // Delete all cities
           
         if (deleteError) {
           console.error("Error deleting existing cities:", deleteError);
           throw new Error(`Failed to delete existing cities: ${deleteError.message}`);
         }
         
-        console.log(`Successfully deleted ${deleteCount || 'unknown number of'} existing cities`);
+        console.log("Successfully deleted existing cities");
         
         // Check if deletion was successful by querying the table
         const { data: checkData, error: checkError } = await supabase
@@ -93,14 +94,13 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
           
           const { error, data } = await supabase
             .from('cities')
-            .insert(batch)
-            .select();
+            .insert(batch);
             
           if (error) {
             console.error("Error inserting city batch:", error);
             throw new Error(`Failed to insert cities: ${error.message}`);
           } else {
-            console.log(`Successfully inserted batch ${i/batchSize + 1}`, data ? `Returned data: ${data.length} items` : "No data returned");
+            console.log(`Successfully inserted batch ${i/batchSize + 1}`);
             successCount += batch.length;
           }
         }
@@ -138,18 +138,18 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
         setUploadProgress(`Deleting existing niches...`);
         console.log("Attempting to delete existing niches...");
         
-        const { error: deleteError, count: deleteCount } = await supabase
+        // Fixed: Remove the .select('count') part to avoid the aggregate function error
+        const { error: deleteError } = await supabase
           .from('niches')
           .delete()
-          .neq('id', 0) // Delete all niches
-          .select('count');
+          .neq('id', 0); // Delete all niches
           
         if (deleteError) {
           console.error("Error deleting existing niches:", deleteError);
           throw new Error(`Failed to delete existing niches: ${deleteError.message}`);
         }
         
-        console.log(`Successfully deleted ${deleteCount || 'unknown number of'} existing niches`);
+        console.log("Successfully deleted existing niches");
         
         // Upload to Supabase in batches
         let successCount = 0;
@@ -164,14 +164,13 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
           
           const { error, data } = await supabase
             .from('niches')
-            .insert(batch)
-            .select();
+            .insert(batch);
             
           if (error) {
             console.error("Error inserting niche batch:", error);
             throw new Error(`Failed to insert niches: ${error.message}`);
           } else {
-            console.log(`Successfully inserted batch ${i/batchSize + 1}`, data ? `Returned data: ${data.length} items` : "No data returned");
+            console.log(`Successfully inserted batch ${i/batchSize + 1}`);
             successCount += batch.length;
           }
         }
