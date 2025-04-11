@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   Card, 
@@ -7,22 +8,18 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Niche, City, SearchCriteria } from "@/types";
 import { fetchCities, fetchNiches } from "@/services/api";
-import { Search, Filter, X, AlertTriangle } from "lucide-react";
+import { Search, Filter, X, AlertTriangle, Check, ChevronsUpDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface SearchFormProps {
   onSearch: (criteria: SearchCriteria) => void;
@@ -41,6 +38,8 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   const [isPopulationEnabled, setIsPopulationEnabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading1, setIsLoading1] = useState(true);
+  const [openNichePopover, setOpenNichePopover] = useState(false);
+  const [openCityPopover, setOpenCityPopover] = useState(false);
   const { toast } = useToast();
 
   // Load niches and cities on component mount
@@ -145,25 +144,50 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
               <div className="space-y-2">
                 <Label htmlFor="niche">Niche (Optional)</Label>
                 <div className="relative">
-                  <Select
-                    onValueChange={(value) => {
-                      const niche = niches.find((n) => n.id.toString() === value);
-                      setSelectedNiche(niche);
-                    }}
-                    value={selectedNiche?.id.toString() || ""}
-                    disabled={niches.length === 0}
-                  >
-                    <SelectTrigger id="niche">
-                      <SelectValue placeholder={niches.length === 0 ? "No niches available" : "Select a niche (optional)"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {niches.map((niche) => (
-                        <SelectItem key={niche.id} value={niche.id.toString()}>
-                          {niche.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={openNichePopover} onOpenChange={setOpenNichePopover}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openNichePopover}
+                        className="w-full justify-between"
+                        disabled={niches.length === 0}
+                      >
+                        {selectedNiche
+                          ? selectedNiche.name
+                          : niches.length === 0 
+                            ? "No niches available" 
+                            : "Select a niche (optional)"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search niches..." />
+                        <CommandEmpty>No niche found.</CommandEmpty>
+                        <CommandGroup className="max-h-60 overflow-y-auto">
+                          {niches.map((niche) => (
+                            <CommandItem
+                              key={niche.id}
+                              value={niche.name}
+                              onSelect={() => {
+                                setSelectedNiche(niche);
+                                setOpenNichePopover(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedNiche?.id === niche.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {niche.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   {selectedNiche && (
                     <Button
                       type="button"
@@ -182,25 +206,50 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
               <div className="space-y-2">
                 <Label htmlFor="city">City (Optional)</Label>
                 <div className="relative">
-                  <Select
-                    onValueChange={(value) => {
-                      const city = cities.find((c) => c.id.toString() === value);
-                      setSelectedCity(city);
-                    }}
-                    value={selectedCity?.id.toString() || ""}
-                    disabled={cities.length === 0}
-                  >
-                    <SelectTrigger id="city">
-                      <SelectValue placeholder={cities.length === 0 ? "No cities available" : "Select a city (optional)"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {cities.map((city) => (
-                        <SelectItem key={city.id} value={city.id.toString()}>
-                          {city.name} ({city.population.toLocaleString()})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={openCityPopover} onOpenChange={setOpenCityPopover}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openCityPopover}
+                        className="w-full justify-between"
+                        disabled={cities.length === 0}
+                      >
+                        {selectedCity
+                          ? `${selectedCity.name} (${selectedCity.population.toLocaleString()})`
+                          : cities.length === 0 
+                            ? "No cities available" 
+                            : "Select a city (optional)"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search cities..." />
+                        <CommandEmpty>No city found.</CommandEmpty>
+                        <CommandGroup className="max-h-60 overflow-y-auto">
+                          {cities.map((city) => (
+                            <CommandItem
+                              key={city.id}
+                              value={city.name}
+                              onSelect={() => {
+                                setSelectedCity(city);
+                                setOpenCityPopover(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedCity?.id === city.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {city.name} ({city.population.toLocaleString()})
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   {selectedCity && (
                     <Button
                       type="button"
