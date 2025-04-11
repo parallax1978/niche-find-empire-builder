@@ -1,4 +1,3 @@
-
 import { ChangeEvent, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -54,14 +53,30 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
         
         // First, delete existing cities to avoid duplicates
         setUploadProgress(`Deleting existing cities...`);
-        const { error: deleteError } = await supabase
+        console.log("Attempting to delete existing cities...");
+        
+        const { error: deleteError, count: deleteCount } = await supabase
           .from('cities')
           .delete()
-          .neq('id', 0); // Delete all cities
+          .neq('id', 0) // Delete all cities
+          .select('count');
           
         if (deleteError) {
           console.error("Error deleting existing cities:", deleteError);
           throw new Error(`Failed to delete existing cities: ${deleteError.message}`);
+        }
+        
+        console.log(`Successfully deleted ${deleteCount || 'unknown number of'} existing cities`);
+        
+        // Check if deletion was successful by querying the table
+        const { data: checkData, error: checkError } = await supabase
+          .from('cities')
+          .select('count');
+          
+        if (checkError) {
+          console.error("Error checking cities table:", checkError);
+        } else {
+          console.log("Cities table after deletion:", checkData);
         }
         
         // Upload to Supabase in batches for better performance
@@ -73,19 +88,37 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
           const batch = cities.slice(i, i + batchSize);
           setUploadProgress(`Uploading cities: ${i}/${cities.length} (${Math.floor(i/cities.length*100)}%)`);
           
-          const { error } = await supabase
+          console.log(`Uploading batch ${i/batchSize + 1}/${Math.ceil(cities.length/batchSize)}, size: ${batch.length}`);
+          console.log("First city in batch:", batch[0]);
+          
+          const { error, data } = await supabase
             .from('cities')
-            .insert(batch);
+            .insert(batch)
+            .select();
             
           if (error) {
             console.error("Error inserting city batch:", error);
             throw new Error(`Failed to insert cities: ${error.message}`);
           } else {
+            console.log(`Successfully inserted batch ${i/batchSize + 1}`, data ? `Returned data: ${data.length} items` : "No data returned");
             successCount += batch.length;
           }
         }
         
         console.log(`Successfully uploaded ${successCount} cities`);
+        
+        // Verify data was inserted by querying the table
+        const { data: verifyData, error: verifyError } = await supabase
+          .from('cities')
+          .select('*')
+          .limit(5);
+          
+        if (verifyError) {
+          console.error("Error verifying city data:", verifyError);
+        } else {
+          console.log("Sample of inserted cities:", verifyData);
+        }
+        
         setUploadProgress(null);
         
         toast({
@@ -103,15 +136,20 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
         
         // Delete existing niches to avoid duplicates
         setUploadProgress(`Deleting existing niches...`);
-        const { error: deleteError } = await supabase
+        console.log("Attempting to delete existing niches...");
+        
+        const { error: deleteError, count: deleteCount } = await supabase
           .from('niches')
           .delete()
-          .neq('id', 0); // Delete all niches
+          .neq('id', 0) // Delete all niches
+          .select('count');
           
         if (deleteError) {
           console.error("Error deleting existing niches:", deleteError);
           throw new Error(`Failed to delete existing niches: ${deleteError.message}`);
         }
+        
+        console.log(`Successfully deleted ${deleteCount || 'unknown number of'} existing niches`);
         
         // Upload to Supabase in batches
         let successCount = 0;
@@ -122,19 +160,36 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
           const batch = niches.slice(i, i + batchSize);
           setUploadProgress(`Uploading niches: ${i}/${niches.length} (${Math.floor(i/niches.length*100)}%)`);
           
-          const { error } = await supabase
+          console.log(`Uploading batch ${i/batchSize + 1}/${Math.ceil(niches.length/batchSize)}, size: ${batch.length}`);
+          
+          const { error, data } = await supabase
             .from('niches')
-            .insert(batch);
+            .insert(batch)
+            .select();
             
           if (error) {
             console.error("Error inserting niche batch:", error);
             throw new Error(`Failed to insert niches: ${error.message}`);
           } else {
+            console.log(`Successfully inserted batch ${i/batchSize + 1}`, data ? `Returned data: ${data.length} items` : "No data returned");
             successCount += batch.length;
           }
         }
         
         console.log(`Successfully uploaded ${successCount} niches`);
+        
+        // Verify data was inserted
+        const { data: verifyData, error: verifyError } = await supabase
+          .from('niches')
+          .select('*')
+          .limit(5);
+          
+        if (verifyError) {
+          console.error("Error verifying niche data:", verifyError);
+        } else {
+          console.log("Sample of inserted niches:", verifyData);
+        }
+        
         setUploadProgress(null);
         
         toast({

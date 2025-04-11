@@ -82,7 +82,7 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
       if (values.length >= Math.max(cityIndex + 1, populationIndex + 1)) {
         const cityName = values[cityIndex]?.trim().replace(/["']/g, ''); // Remove quotes if present
         
-        // More aggressive population cleanup
+        // Even more aggressive population cleaning
         let populationStr = values[populationIndex]?.trim().replace(/["']/g, ''); // Remove quotes
         
         // Remove any non-numeric characters except for commas and periods
@@ -91,8 +91,11 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
         // Replace commas with nothing (for numbers like 100,000)
         populationStr = populationStr.replace(/,/g, '');
         
-        // Parse as integer
-        const population = parseInt(populationStr, 10);
+        // Try to convert to a number first
+        const populationNum = Number(populationStr);
+        
+        // Only parse as integer if it's a valid number
+        const population = !isNaN(populationNum) ? Math.round(populationNum) : NaN;
         
         if (cityName && !isNaN(population)) {
           results.push({ 
@@ -108,6 +111,7 @@ export const parseCitiesCsv = (content: string): { name: string; population: num
           console.log(`Skipping row ${i+1} due to invalid data:`, { 
             cityName, 
             populationStr,
+            populationNum,
             population: isNaN(population) ? 'NaN' : population 
           });
         }
