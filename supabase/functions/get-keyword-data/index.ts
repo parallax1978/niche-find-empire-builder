@@ -59,51 +59,17 @@ serve(async (req) => {
     console.log('Sending request to Moz API...')
     console.log('Request body:', mozBody)
 
-    // Log headers being sent (excluding sensitive data)
-    const mozHeaders = {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer [REDACTED]'
-    }
-    console.log('Request headers:', JSON.stringify(mozHeaders, null, 2))
-
-    try {
-      const response = await fetch(mozUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${MOZ_API_KEY}`
-        },
-        body: mozBody
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Moz API error (${response.status}): ${errorText}`)
-      }
-
-      const data = await response.json()
-      return data
-    } catch (error) {
-      console.error('Moz API error:', error)
-      throw error
-    }
-    console.log('Making Moz API request with body:', mozBody)
-
-    // Log headers being sent
     const mozHeaders = {
       'Content-Type': 'application/json',
       'Authorization': `Basic ${btoa(`${MOZ_API_KEY}:`)}`,
+      'Accept': 'application/json',
+      'User-Agent': 'RankAndRentNicheFinder/1.0'
     }
-    console.log('Moz API Headers:', JSON.stringify(mozHeaders, null, 2))
+    console.log('Request headers:', JSON.stringify({...mozHeaders, Authorization: '[REDACTED]'}, null, 2))
 
     const mozResponse = await fetch(mozUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${btoa(`${MOZ_API_KEY}:`)}`,
-        'Accept': 'application/json',
-        'User-Agent': 'RankAndRentNicheFinder/1.0'
-      },
+      headers: mozHeaders,
       body: mozBody
     })
 
