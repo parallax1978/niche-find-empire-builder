@@ -1,4 +1,3 @@
-
 import { ChangeEvent, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -26,7 +25,6 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
     
     if (!file) return;
     
-    // Only accept CSV files
     if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
       toast({
         title: "Invalid file type",
@@ -52,15 +50,13 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
         console.log(`Uploading ${cities.length} cities to Supabase`);
         setUploadProgress(`Processing ${cities.length} cities...`);
         
-        // First, delete existing cities to avoid duplicates
         setUploadProgress(`Deleting existing cities...`);
         console.log("Attempting to delete existing cities...");
         
-        // Fixed: Remove the .select('count') part to avoid the aggregate function error
         const { error: deleteError } = await supabase
           .from('cities')
           .delete()
-          .neq('id', 0); // Delete all cities
+          .neq('id', 0);
           
         if (deleteError) {
           console.error("Error deleting existing cities:", deleteError);
@@ -69,7 +65,6 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
         
         console.log("Successfully deleted existing cities");
         
-        // Check if deletion was successful by querying the table
         const { data: checkData, error: checkError } = await supabase
           .from('cities')
           .select('count');
@@ -80,7 +75,6 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
           console.log("Cities table after deletion:", checkData);
         }
         
-        // Upload to Supabase in batches for better performance
         let successCount = 0;
         const batchSize = 50;
         setUploadProgress(`Uploading cities in batches...`);
@@ -107,7 +101,6 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
         
         console.log(`Successfully uploaded ${successCount} cities`);
         
-        // Verify data was inserted by querying the table
         const { data: verifyData, error: verifyError } = await supabase
           .from('cities')
           .select('*')
@@ -134,15 +127,13 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
         
         setUploadProgress(`Processing ${niches.length} niches...`);
         
-        // Delete existing niches to avoid duplicates
         setUploadProgress(`Deleting existing niches...`);
         console.log("Attempting to delete existing niches...");
         
-        // Fixed: Remove the .select('count') part to avoid the aggregate function error
         const { error: deleteError } = await supabase
           .from('niches')
           .delete()
-          .neq('id', 0); // Delete all niches
+          .neq('id', 0);
           
         if (deleteError) {
           console.error("Error deleting existing niches:", deleteError);
@@ -151,7 +142,6 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
         
         console.log("Successfully deleted existing niches");
         
-        // Upload to Supabase in batches
         let successCount = 0;
         const batchSize = 50;
         setUploadProgress(`Uploading niches in batches...`);
@@ -177,7 +167,6 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
         
         console.log(`Successfully uploaded ${successCount} niches`);
         
-        // Verify data was inserted
         const { data: verifyData, error: verifyError } = await supabase
           .from('niches')
           .select('*')
@@ -197,10 +186,8 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
         });
       }
       
-      // Reset file input
       e.target.value = '';
       
-      // Call success callback
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Upload error:", error);
@@ -243,12 +230,12 @@ const CsvUploader = ({ type, onSuccess }: UploaderProps) => {
       </div>
       <p className="text-xs text-muted-foreground mt-1">
         {type === "cities" 
-          ? "CSV should have columns for 'city', 'state' (2-letter code), and 'population'" 
+          ? "CSV should have columns in this exact order: City, State (2-letter code), Population" 
           : "CSV should have a 'name' column for niches"}
       </p>
       <div className="text-xs text-muted-foreground mt-1">
-        <strong>Note:</strong> The parser will automatically detect column positions based on headers.
-        Make sure your CSV has proper headers.
+        <strong>Note:</strong> The CSV must follow the exact column order specified above.
+        Headers are optional but recommended.
       </div>
     </div>
   );
