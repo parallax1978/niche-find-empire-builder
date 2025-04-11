@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   Card, 
@@ -28,6 +29,8 @@ interface SearchFormProps {
 const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   const [niches, setNiches] = useState<Niche[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [filteredCities, setFilteredCities] = useState<City[]>([]);
+  const [citySearchValue, setCitySearchValue] = useState("");
   const [selectedNiche, setSelectedNiche] = useState<Niche | undefined>(undefined);
   const [selectedCity, setSelectedCity] = useState<City | undefined>(undefined);
   const [searchVolumeRange, setSearchVolumeRange] = useState([0, 1000000]);
@@ -70,6 +73,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
         
         setNiches(nichesData);
         setCities(citiesData);
+        setFilteredCities(citiesData.slice(0, 100)); // Initially show first 100 cities
         
         console.log(`Loaded ${citiesData.length} cities and ${nichesData.length} niches`);
       } catch (error) {
@@ -82,6 +86,20 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
 
     loadData();
   }, [toast]);
+
+  // Filter cities based on search input
+  useEffect(() => {
+    if (citySearchValue.trim() === "") {
+      setFilteredCities(cities.slice(0, 100)); // Show top 100 cities when no search
+    } else {
+      const filtered = cities
+        .filter(city => 
+          city.name.toLowerCase().includes(citySearchValue.toLowerCase())
+        )
+        .slice(0, 100); // Limit to 100 results for performance
+      setFilteredCities(filtered);
+    }
+  }, [citySearchValue, cities]);
 
   const handleSubmit = () => {
     const criteria: SearchCriteria = {
@@ -161,8 +179,10 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0" align="start">
                       <Command>
-                        <CommandInput placeholder="Search niches..." />
-                        <CommandList>
+                        <CommandInput 
+                          placeholder="Search niches..." 
+                        />
+                        <CommandList className="max-h-[300px] overflow-y-auto">
                           <CommandEmpty>No niche found.</CommandEmpty>
                           <CommandGroup>
                             {niches.map((niche) => (
@@ -225,11 +245,15 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0" align="start">
                       <Command>
-                        <CommandInput placeholder="Search cities..." />
-                        <CommandList>
+                        <CommandInput 
+                          placeholder="Search cities..." 
+                          value={citySearchValue}
+                          onValueChange={setCitySearchValue}
+                        />
+                        <CommandList className="max-h-[300px] overflow-y-auto">
                           <CommandEmpty>No city found.</CommandEmpty>
                           <CommandGroup>
-                            {cities.map((city) => (
+                            {filteredCities.map((city) => (
                               <CommandItem
                                 key={city.id}
                                 value={city.name}
@@ -248,6 +272,11 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                               </CommandItem>
                             ))}
                           </CommandGroup>
+                          {citySearchValue.trim() === "" && cities.length > 100 && (
+                            <div className="py-2 px-2 text-xs text-center text-muted-foreground">
+                              Showing top 100 cities by population. Type to search for more.
+                            </div>
+                          )}
                         </CommandList>
                       </Command>
                     </PopoverContent>
