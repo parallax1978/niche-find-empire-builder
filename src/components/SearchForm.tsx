@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Niche, City, SearchCriteria } from "@/types";
 import { fetchCities, fetchNiches } from "@/services/api";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SearchFormProps {
@@ -65,16 +65,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   }, [toast]);
 
   const handleSubmit = () => {
-    // Simple validation - require at least one selection
-    if (!selectedNiche && !selectedCity) {
-      toast({
-        title: "Missing information",
-        description: "Please select at least a niche or a city.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    // No validation needed for niche and city - they're optional
     const criteria: SearchCriteria = {
       niche: selectedNiche,
       city: selectedCity,
@@ -98,6 +89,14 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
     onSearch(criteria);
   };
 
+  const clearNiche = () => {
+    setSelectedNiche(undefined);
+  };
+
+  const clearCity = () => {
+    setSelectedCity(undefined);
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -111,47 +110,75 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="niche">Niche</Label>
-            <Select
-              onValueChange={(value) => {
-                const niche = niches.find((n) => n.id.toString() === value);
-                setSelectedNiche(niche);
-              }}
-              value={selectedNiche?.id.toString() || ""}
-            >
-              <SelectTrigger id="niche">
-                <SelectValue placeholder="Select a niche" />
-              </SelectTrigger>
-              <SelectContent>
-                {niches.map((niche) => (
-                  <SelectItem key={niche.id} value={niche.id.toString()}>
-                    {niche.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="niche">Niche (Optional)</Label>
+            <div className="relative">
+              <Select
+                onValueChange={(value) => {
+                  const niche = niches.find((n) => n.id.toString() === value);
+                  setSelectedNiche(niche);
+                }}
+                value={selectedNiche?.id.toString() || ""}
+              >
+                <SelectTrigger id="niche">
+                  <SelectValue placeholder="Select a niche (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {niches.map((niche) => (
+                    <SelectItem key={niche.id} value={niche.id.toString()}>
+                      {niche.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedNiche && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-8 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+                  onClick={clearNiche}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Clear</span>
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="city">City</Label>
-            <Select
-              onValueChange={(value) => {
-                const city = cities.find((c) => c.id.toString() === value);
-                setSelectedCity(city);
-              }}
-              value={selectedCity?.id.toString() || ""}
-            >
-              <SelectTrigger id="city">
-                <SelectValue placeholder="Select a city" />
-              </SelectTrigger>
-              <SelectContent>
-                {cities.map((city) => (
-                  <SelectItem key={city.id} value={city.id.toString()}>
-                    {city.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="city">City (Optional)</Label>
+            <div className="relative">
+              <Select
+                onValueChange={(value) => {
+                  const city = cities.find((c) => c.id.toString() === value);
+                  setSelectedCity(city);
+                }}
+                value={selectedCity?.id.toString() || ""}
+              >
+                <SelectTrigger id="city">
+                  <SelectValue placeholder="Select a city (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cities.map((city) => (
+                    <SelectItem key={city.id} value={city.id.toString()}>
+                      {city.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedCity && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-8 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+                  onClick={clearCity}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Clear</span>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 

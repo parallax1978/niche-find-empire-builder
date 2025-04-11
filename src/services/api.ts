@@ -49,15 +49,24 @@ export const fetchNiches = async (): Promise<Niche[]> => {
   });
 };
 
-// Generate keyword variants
-const generateKeywordVariants = (niche: string, city: string): string[] => {
-  return [
-    `${city} ${niche}`,
-    `${niche} ${city}`,
-    `${niche} in ${city}`,
-    `${city} local ${niche}`,
-    `best ${niche} in ${city}`,
-  ];
+// Generate keyword variants based on available data
+const generateKeywordVariants = (niche?: string, city?: string): string[] => {
+  if (niche && city) {
+    return [
+      `${city} ${niche}`,
+      `${niche} ${city}`,
+      `${niche} in ${city}`,
+      `${city} local ${niche}`,
+      `best ${niche} in ${city}`,
+    ];
+  } else if (niche) {
+    return [niche, `best ${niche}`, `professional ${niche}`, `${niche} services`];
+  } else if (city) {
+    return [city, `services in ${city}`, `local businesses ${city}`];
+  } else {
+    // If neither niche nor city is provided, return some generic business keywords
+    return ["local services", "professional services", "small business", "home services"];
+  }
 };
 
 // Generate mock search data for a keyword
@@ -97,13 +106,9 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
   // For our mock implementation:
   return new Promise((resolve) => {
     setTimeout(async () => {
-      // If either niche or city is missing, return empty results
-      if (!criteria.niche || !criteria.city) {
-        resolve([]);
-        return;
-      }
-      
-      const keywords = generateKeywordVariants(criteria.niche.name, criteria.city.name);
+      const nicheName = criteria.niche?.name;
+      const cityName = criteria.city?.name;
+      const keywords = generateKeywordVariants(nicheName, cityName);
       const results: KeywordResult[] = [];
       
       for (const keyword of keywords) {
@@ -116,9 +121,9 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
           searchData.cpc >= criteria.cpc.min &&
           searchData.cpc <= criteria.cpc.max
         ) {
-          // Only check population if criteria is provided
+          // Only check population if city and population criteria are provided
           let populationPass = true;
-          if (criteria.population) {
+          if (criteria.population && criteria.city) {
             populationPass = 
               criteria.city.population >= criteria.population.min &&
               criteria.city.population <= criteria.population.max;
@@ -128,12 +133,15 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
             const domainAvailable = await checkDomainAvailability(keyword);
             const domainLink = domainAvailable ? generateAffiliateLink(keyword) : null;
             
+            // Create a unique ID for the result
+            const id = `result-${results.length}-${Date.now()}`;
+            
             results.push({
-              id: `${criteria.niche.id}-${criteria.city.id}-${results.length}`,
+              id,
               keyword,
               searchVolume: searchData.volume,
               cpc: searchData.cpc,
-              population: criteria.city.population,
+              population: criteria.city?.population || null,
               domainAvailable,
               domainLink,
             });
