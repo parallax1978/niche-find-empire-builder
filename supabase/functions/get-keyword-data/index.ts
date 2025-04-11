@@ -49,11 +49,11 @@ serve(async (req) => {
     }
 
     // Set up the Moz API request
-    const mozUrl = 'https://api.moz.com/v2/keyword_metrics'
+    const mozUrl = 'https://moz.com/api/v2/keyword_explorer/metrics/domain'
     const mozBody = JSON.stringify({
-      usage_action: 'data.keyword.metrics.volume.fetch',
-      targets: [keyword],
-      locale: 'en-US'
+      keywords: [keyword],
+      provider: "us_google",
+      metric_types: ["search_volume", "search_volume_monthly", "cpc"]
     })
 
     console.log('Sending request to Moz API...')
@@ -97,14 +97,14 @@ serve(async (req) => {
     }
     
 
-    if (!mozData || !mozData.results || mozData.results.length === 0) {
+    if (!mozData || !mozData.data || mozData.data.length === 0) {
       throw new Error('No data returned from Moz API')
     }
 
     // Extract search volume and CPC from Moz data
-    const keywordData = mozData.results[0]
-    let searchVolume = keywordData.search_volume || 0
-    let cpc = keywordData.cpc || 0
+    const keywordData = mozData.data[0]
+    let searchVolume = keywordData.search_volume?.value || 0
+    let cpc = keywordData.cpc?.value || 0
 
     // If Moz doesn't provide CPC, try to get it from SerpAPI
     if (cpc === 0 && SERPAPI_API_KEY) {
