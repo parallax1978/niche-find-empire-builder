@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { City, Niche, SearchCriteria, KeywordResult } from "@/types";
 
@@ -25,7 +26,7 @@ export const fetchCities = async (): Promise<City[]> => {
     return data;
   } catch (error) {
     console.error("Error in fetchCities:", error);
-    throw error; // Propagate the error instead of falling back to mock data
+    throw error;
   }
 };
 
@@ -51,7 +52,7 @@ export const fetchNiches = async (): Promise<Niche[]> => {
     return data;
   } catch (error) {
     console.error("Error in fetchNiches:", error);
-    throw error; // Propagate the error instead of falling back to mock data
+    throw error;
   }
 };
 
@@ -71,7 +72,7 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Error fetching keyword data: ${errorText}`);
+      console.error(`Error fetching keyword data (${response.status}): ${errorText}`);
       throw new Error(`Failed to fetch keyword data: ${errorText}`);
     }
     
@@ -79,19 +80,15 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
     console.log(`Received data for keyword "${keyword}":`, data);
     
     if (data.error) {
-      console.error(`API reported error for "${keyword}":`, data.error);
-      // If the API returned an error but also included mock data, use it
+      console.error(`API reported error for "${keyword}":`, data.error, data.details || '');
+      
+      // Log whether we're falling back to mock data
       if (data.mockDataUsed) {
         console.warn(`Using mock data provided by the API for "${keyword}"`);
-        return {
-          searchVolume: data.searchVolume,
-          cpc: data.cpc,
-          mockDataUsed: true
-        };
+      } else {
+        // If the API returned an error but didn't provide mock data, throw the error
+        throw new Error(`API error: ${data.error} - ${data.details || ''}`);
       }
-      
-      // Otherwise, throw the error
-      throw new Error(data.error);
     }
     
     return {
@@ -101,9 +98,6 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
     };
   } catch (error) {
     console.error(`Error fetching keyword data for "${keyword}":`, error);
-    
-    // We're explicitly throwing the error to avoid silently falling back to mock data
-    // This will be caught by the searchNiches function which will handle the failure
     throw error;
   }
 };
@@ -212,6 +206,6 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
     return results;
   } catch (error) {
     console.error("Error searching niches:", error);
-    throw error; // Propagate the error instead of returning an empty array
+    throw error;
   }
 };

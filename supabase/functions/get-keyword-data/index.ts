@@ -28,11 +28,14 @@ serve(async (req) => {
       console.error('SerpAPI key is not configured in environment variables')
       return new Response(
         JSON.stringify({ 
-          error: 'SerpAPI key is not configured in environment variables',
-          mockDataUsed: true 
+          error: 'SerpAPI key is not configured',
+          details: 'You need to set the SERPAPI_API_KEY in your Supabase edge function secrets',
+          mockDataUsed: true,
+          searchVolume: Math.floor(Math.random() * 900000) + 100000,
+          cpc: Math.random() * 49 + 1
         }),
         { 
-          status: 500, 
+          status: 200, 
           headers: { 
             'Content-Type': 'application/json',
             ...corsHeaders 
@@ -58,36 +61,60 @@ serve(async (req) => {
     }
 
     console.log(`Getting data for keyword: "${keyword}"`)
-    console.log(`Using SerpAPI key: ${SERPAPI_API_KEY.substring(0, 5)}...`)
+    console.log(`Using SerpAPI key: ${SERPAPI_API_KEY.substring(0, 3)}...${SERPAPI_API_KEY.substring(SERPAPI_API_KEY.length - 3)}`)
 
     // Call SerpAPI to get keyword data
     const url = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(keyword)}&api_key=${SERPAPI_API_KEY}&google_domain=google.com&gl=us`
     
+    console.log(`Calling SerpAPI with URL: ${url.substring(0, url.indexOf('api_key=') + 8)}[API_KEY_HIDDEN]`)
     const response = await fetch(url)
     
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`SerpAPI error: ${errorText}`)
+      console.error(`SerpAPI error (${response.status}): ${errorText}`)
       
-      return new Response(
-        JSON.stringify({ 
-          error: 'Failed to fetch data from SerpAPI',
-          details: errorText,
-          mockDataUsed: true,
-          searchVolume: Math.floor(Math.random() * 900000) + 100000,
-          cpc: Math.random() * 49 + 1
-        }),
-        { 
-          status: 200, // Return 200 with mock data
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders 
-          } 
-        }
-      )
+      // Only return mock data if it's an API key issue or server error
+      // This helps with debugging other potential issues
+      if (response.status === 401 || response.status >= 500) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Failed to fetch data from SerpAPI',
+            details: errorText,
+            status: response.status,
+            mockDataUsed: true,
+            searchVolume: Math.floor(Math.random() * 900000) + 100000,
+            cpc: Math.random() * 49 + 1
+          }),
+          { 
+            status: 200, 
+            headers: { 
+              'Content-Type': 'application/json',
+              ...corsHeaders 
+            } 
+          }
+        )
+      } else {
+        // For other errors, don't return mock data to make the error more obvious
+        return new Response(
+          JSON.stringify({ 
+            error: 'SerpAPI request failed',
+            details: errorText,
+            status: response.status,
+            mockDataUsed: false
+          }),
+          { 
+            status: response.status, 
+            headers: { 
+              'Content-Type': 'application/json',
+              ...corsHeaders 
+            } 
+          }
+        )
+      }
     }
 
     const data = await response.json()
+    console.log(`Successfully received data from SerpAPI for "${keyword}"`)
     
     // Extract search volume and CPC from the response
     let searchVolume = 0
@@ -177,7 +204,7 @@ serve(async (req) => {
         cpc: Math.random() * 49 + 1
       }),
       { 
-        status: 200, // Return 200 with mock data
+        status: 200, 
         headers: { 
           'Content-Type': 'application/json',
           ...corsHeaders 
