@@ -1,0 +1,892 @@
+index-Dwov98G_.js:159 Fetched cities: (546) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, …]
+index-Dwov98G_.js:159 Number of cities: 546
+index-Dwov98G_.js:159 Fetched niches: (853) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, …]
+index-Dwov98G_.js:209 Loaded 546 cities and 853 niches
+index-Dwov98G_.js:209 Population filter disabled
+index-Dwov98G_.js:209 Final search criteria: {
+  "searchVolume": {
+    "min": 0,
+    "max": 1000000
+  },
+  "cpc": {
+    "min": 0,
+    "max": 1000
+  }
+}
+index-Dwov98G_.js:209 Starting search with criteria: {
+  "searchVolume": {
+    "min": 0,
+    "max": 1000000
+  },
+  "cpc": {
+    "min": 0,
+    "max": 1000
+  }
+}
+index-Dwov98G_.js:159 Searching with criteria: {
+  "searchVolume": {
+    "min": 0,
+    "max": 1000000
+  },
+  "cpc": {
+    "min": 0,
+    "max": 1000
+  }
+}
+index-Dwov98G_.js:159 Fetched cities: (546) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, …]
+index-Dwov98G_.js:159 Number of cities: 546
+index-Dwov98G_.js:159 Fetched niches: (853) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, …]
+index-Dwov98G_.js:159 Processing 853 niches and 546 cities
+index-Dwov98G_.js:159 Fetching data for keyword: 3d rendering New York
+index-Dwov98G_.js:159 
+            
+            
+           POST https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data 500 (Internal Server Error)
+RO @ index-Dwov98G_.js:159
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data (500): {"keyword":"3d rendering New York","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data for "3d rendering New York": Error: Failed to fetch keyword data: {"keyword":"3d rendering New York","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error processing 3d rendering New York: Error: Failed to fetch keyword data: {"keyword":"3d rendering New York","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Fetching data for keyword: 3d rendering Los Angeles
+index-Dwov98G_.js:159 
+            
+            
+           POST https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data 500 (Internal Server Error)
+RO @ index-Dwov98G_.js:159
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data (500): {"keyword":"3d rendering Los Angeles","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data for "3d rendering Los Angeles": Error: Failed to fetch keyword data: {"keyword":"3d rendering Los Angeles","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error processing 3d rendering Los Angeles: Error: Failed to fetch keyword data: {"keyword":"3d rendering Los Angeles","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Fetching data for keyword: 3d rendering Chicago
+index-Dwov98G_.js:159 
+            
+            
+           POST https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data 500 (Internal Server Error)
+RO @ index-Dwov98G_.js:159
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data (500): {"keyword":"3d rendering Chicago","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data for "3d rendering Chicago": Error: Failed to fetch keyword data: {"keyword":"3d rendering Chicago","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error processing 3d rendering Chicago: Error: Failed to fetch keyword data: {"keyword":"3d rendering Chicago","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Fetching data for keyword: above ground pool installation New York
+index-Dwov98G_.js:159 
+            
+            
+           POST https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data 500 (Internal Server Error)
+RO @ index-Dwov98G_.js:159
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data (500): {"keyword":"above ground pool installation New York","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data for "above ground pool installation New York": Error: Failed to fetch keyword data: {"keyword":"above ground pool installation New York","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error processing above ground pool installation New York: Error: Failed to fetch keyword data: {"keyword":"above ground pool installation New York","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Fetching data for keyword: above ground pool installation Los Angeles
+index-Dwov98G_.js:159 
+            
+            
+           POST https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data 500 (Internal Server Error)
+RO @ index-Dwov98G_.js:159
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data (500): {"keyword":"above ground pool installation Los Angeles","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data for "above ground pool installation Los Angeles": Error: Failed to fetch keyword data: {"keyword":"above ground pool installation Los Angeles","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error processing above ground pool installation Los Angeles: Error: Failed to fetch keyword data: {"keyword":"above ground pool installation Los Angeles","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Fetching data for keyword: above ground pool installation Chicago
+index-Dwov98G_.js:159 
+            
+            
+           POST https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data 500 (Internal Server Error)
+RO @ index-Dwov98G_.js:159
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data (500): {"keyword":"above ground pool installation Chicago","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data for "above ground pool installation Chicago": Error: Failed to fetch keyword data: {"keyword":"above ground pool installation Chicago","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error processing above ground pool installation Chicago: Error: Failed to fetch keyword data: {"keyword":"above ground pool installation Chicago","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Fetching data for keyword: aboveground pools New York
+index-Dwov98G_.js:159 
+            
+            
+           POST https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data 500 (Internal Server Error)
+RO @ index-Dwov98G_.js:159
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data (500): {"keyword":"aboveground pools New York","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data for "aboveground pools New York": Error: Failed to fetch keyword data: {"keyword":"aboveground pools New York","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error processing aboveground pools New York: Error: Failed to fetch keyword data: {"keyword":"aboveground pools New York","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Fetching data for keyword: aboveground pools Los Angeles
+index-Dwov98G_.js:159 
+            
+            
+           POST https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data 500 (Internal Server Error)
+RO @ index-Dwov98G_.js:159
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data (500): {"keyword":"aboveground pools Los Angeles","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data for "aboveground pools Los Angeles": Error: Failed to fetch keyword data: {"keyword":"aboveground pools Los Angeles","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error processing aboveground pools Los Angeles: Error: Failed to fetch keyword data: {"keyword":"aboveground pools Los Angeles","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Fetching data for keyword: aboveground pools Chicago
+index-Dwov98G_.js:159 
+            
+            
+           POST https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data 500 (Internal Server Error)
+RO @ index-Dwov98G_.js:159
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data (500): {"keyword":"aboveground pools Chicago","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data for "aboveground pools Chicago": Error: Failed to fetch keyword data: {"keyword":"aboveground pools Chicago","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error processing aboveground pools Chicago: Error: Failed to fetch keyword data: {"keyword":"aboveground pools Chicago","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Generated 0 results after applying all filters
+index-Dwov98G_.js:209 Search completed with 0 results
+index-Dwov98G_.js:209 Population filter disabled
+index-Dwov98G_.js:209 Final search criteria: {
+  "niche": {
+    "id": 364,
+    "name": "ac installation"
+  },
+  "city": {
+    "id": 5,
+    "name": "Phoenix",
+    "population": 1695777,
+    "state": "AZ"
+  },
+  "searchVolume": {
+    "min": 0,
+    "max": 1000000
+  },
+  "cpc": {
+    "min": 0,
+    "max": 1000
+  }
+}
+index-Dwov98G_.js:209 Starting search with criteria: {
+  "niche": {
+    "id": 364,
+    "name": "ac installation"
+  },
+  "city": {
+    "id": 5,
+    "name": "Phoenix",
+    "population": 1695777,
+    "state": "AZ"
+  },
+  "searchVolume": {
+    "min": 0,
+    "max": 1000000
+  },
+  "cpc": {
+    "min": 0,
+    "max": 1000
+  }
+}
+index-Dwov98G_.js:159 Searching with criteria: {
+  "niche": {
+    "id": 364,
+    "name": "ac installation"
+  },
+  "city": {
+    "id": 5,
+    "name": "Phoenix",
+    "population": 1695777,
+    "state": "AZ"
+  },
+  "searchVolume": {
+    "min": 0,
+    "max": 1000000
+  },
+  "cpc": {
+    "min": 0,
+    "max": 1000
+  }
+}
+index-Dwov98G_.js:159 Processing 1 niches and 1 cities
+index-Dwov98G_.js:159 Fetching data for keyword: ac installation Phoenix
+index-Dwov98G_.js:159 
+            
+            
+           POST https://orbxoshntxwspdzokcdi.supabase.co/functions/v1/get-keyword-data 500 (Internal Server Error)
+RO @ index-Dwov98G_.js:159
+NO @ index-Dwov98G_.js:159
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data (500): {"keyword":"ac installation Phoenix","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error fetching keyword data for "ac installation Phoenix": Error: Failed to fetch keyword data: {"keyword":"ac installation Phoenix","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+RO @ index-Dwov98G_.js:159
+await in RO
+NO @ index-Dwov98G_.js:159
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Error processing ac installation Phoenix: Error: Failed to fetch keyword data: {"keyword":"ac installation Phoenix","searchVolume":0,"cpc":0,"errorMessage":"Failed to get data from Moz API: Moz API returned status 403"}
+    at RO (index-Dwov98G_.js:159:54737)
+    at async NO (index-Dwov98G_.js:159:55821)
+    at async c (index-Dwov98G_.js:209:21630)
+NO @ index-Dwov98G_.js:159
+await in NO
+c @ index-Dwov98G_.js:209
+q @ index-Dwov98G_.js:209
+AE @ index-Dwov98G_.js:37
+IE @ index-Dwov98G_.js:37
+DE @ index-Dwov98G_.js:37
+Up @ index-Dwov98G_.js:37
+my @ index-Dwov98G_.js:37
+(anonymous) @ index-Dwov98G_.js:37
+ah @ index-Dwov98G_.js:40
+Fg @ index-Dwov98G_.js:37
+zc @ index-Dwov98G_.js:37
+If @ index-Dwov98G_.js:37
+JE @ index-Dwov98G_.js:37
+index-Dwov98G_.js:159 Generated 0 results after applying all filters
+index-Dwov98G_.js:209 Search completed with 0 results
