@@ -17,7 +17,7 @@ import { fetchCities, fetchNiches } from "@/services/api";
 import { Search, Filter, X, AlertTriangle, Check, ChevronsUpDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
@@ -164,27 +164,29 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                     <PopoverContent className="w-full p-0" align="start">
                       <Command>
                         <CommandInput placeholder="Search niches..." />
-                        <CommandEmpty>No niche found.</CommandEmpty>
-                        <CommandGroup className="max-h-60 overflow-y-auto">
-                          {niches.map((niche) => (
-                            <CommandItem
-                              key={niche.id}
-                              value={niche.name}
-                              onSelect={() => {
-                                setSelectedNiche(niche);
-                                setOpenNichePopover(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  selectedNiche?.id === niche.id ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {niche.name}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
+                        <CommandList>
+                          <CommandEmpty>No niche found.</CommandEmpty>
+                          <CommandGroup>
+                            {niches.map((niche) => (
+                              <CommandItem
+                                key={niche.id}
+                                value={niche.name}
+                                onSelect={() => {
+                                  setSelectedNiche(niche);
+                                  setOpenNichePopover(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedNiche?.id === niche.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {niche.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
                       </Command>
                     </PopoverContent>
                   </Popover>
@@ -226,27 +228,29 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                     <PopoverContent className="w-full p-0" align="start">
                       <Command>
                         <CommandInput placeholder="Search cities..." />
-                        <CommandEmpty>No city found.</CommandEmpty>
-                        <CommandGroup className="max-h-60 overflow-y-auto">
-                          {cities.map((city) => (
-                            <CommandItem
-                              key={city.id}
-                              value={city.name}
-                              onSelect={() => {
-                                setSelectedCity(city);
-                                setOpenCityPopover(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  selectedCity?.id === city.id ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {city.name} ({city.population.toLocaleString()})
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
+                        <CommandList>
+                          <CommandEmpty>No city found.</CommandEmpty>
+                          <CommandGroup>
+                            {cities.map((city) => (
+                              <CommandItem
+                                key={city.id}
+                                value={city.name}
+                                onSelect={() => {
+                                  setSelectedCity(city);
+                                  setOpenCityPopover(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedCity?.id === city.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {city.name} ({city.population.toLocaleString()})
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
                       </Command>
                     </PopoverContent>
                   </Popover>
