@@ -86,20 +86,39 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
     loadData();
   }, [toast]);
 
-  // Filter cities based on search input
   useEffect(() => {
     if (citySearchValue.trim() === "") {
       setFilteredCities(cities.slice(0, 100)); // Show top 100 cities when no search
     } else {
       const searchTerm = citySearchValue.toLowerCase().trim();
+      
       const filtered = cities
         .filter(city => 
           city.name.toLowerCase().includes(searchTerm)
         )
-        .slice(0, 100); // Still limit results to 100 for performance
+        .slice(0, 100); // Still limit display results to 100 for performance
+      
       setFilteredCities(filtered);
       
       console.log(`Search for "${searchTerm}" found ${filtered.length} results`);
+      
+      if (filtered.length < 10) {
+        console.log("Found cities:", filtered.map(c => c.name));
+      }
+      
+      if (searchTerm === "cartersville" || searchTerm.includes("cartersville")) {
+        const hasCartersville = cities.some(city => 
+          city.name.toLowerCase().includes("cartersville")
+        );
+        console.log(`Is "cartersville" in the cities array? ${hasCartersville}`);
+        
+        if (hasCartersville) {
+          const cartersvilleCity = cities.find(city => 
+            city.name.toLowerCase().includes("cartersville")
+          );
+          console.log("Cartersville city data:", cartersvilleCity);
+        }
+      }
     }
   }, [citySearchValue, cities]);
 
