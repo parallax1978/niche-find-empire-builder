@@ -49,11 +49,13 @@ serve(async (req) => {
     // Set up the Moz API request
     const mozUrl = 'https://api.moz.com/v2/keyword_metrics'
     const mozBody = JSON.stringify({
-      action: 'data.keyword.metrics.fetch',
       keywords: [keyword]
     })
     
     console.log('Sending request to Moz API...')
+    console.log('Request URL:', mozUrl)
+    console.log('Request body:', mozBody)
+    
     const mozResponse = await fetch(mozUrl, {
       method: 'POST',
       headers: {
@@ -66,12 +68,13 @@ serve(async (req) => {
     
     if (!mozResponse.ok) {
       const errorText = await mozResponse.text()
-      console.error(`Moz API error (${mozResponse.status}): ${errorText}`)
+      console.error(`Moz API error (${mozResponse.status}):`, errorText)
+      console.error('Response headers:', Object.fromEntries(mozResponse.headers.entries()))
       throw new Error(`Moz API returned status ${mozResponse.status}: ${errorText}`)
     }
     
     const mozData = await mozResponse.json()
-    console.log('Moz API response:', JSON.stringify(mozData))
+    console.log('Moz API response:', JSON.stringify(mozData, null, 2))
     
     if (!mozData || !mozData.results || mozData.results.length === 0) {
       throw new Error('No data returned from Moz API')
