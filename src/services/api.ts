@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { City, Niche, SearchCriteria, KeywordResult } from "@/types";
 
@@ -57,7 +56,7 @@ export const fetchNiches = async (): Promise<Niche[]> => {
 };
 
 // Fetch keyword data from SerpAPI using our edge function
-const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number, cpc: number }> => {
+const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number, cpc: number, mockDataUsed: boolean }> => {
   try {
     console.log(`Fetching data for keyword: ${keyword}`);
     
@@ -79,17 +78,33 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
     const data = await response.json();
     console.log(`Received data for keyword "${keyword}":`, data);
     
+    if (data.error) {
+      console.error(`API reported error for "${keyword}":`, data.error);
+      // If the API returned an error but also included mock data, use it
+      if (data.mockDataUsed) {
+        console.warn(`Using mock data provided by the API for "${keyword}"`);
+        return {
+          searchVolume: data.searchVolume,
+          cpc: data.cpc,
+          mockDataUsed: true
+        };
+      }
+      
+      // Otherwise, throw the error
+      throw new Error(data.error);
+    }
+    
     return {
       searchVolume: data.searchVolume,
       cpc: data.cpc,
+      mockDataUsed: data.mockDataUsed || false
     };
   } catch (error) {
     console.error(`Error fetching keyword data for "${keyword}":`, error);
-    // Fallback to random data if API fails
-    return {
-      searchVolume: Math.floor(Math.random() * 900000) + 100000,
-      cpc: Math.random() * 49 + 1,
-    };
+    
+    // We're explicitly throwing the error to avoid silently falling back to mock data
+    // This will be caught by the searchNiches function which will handle the failure
+    throw error;
   }
 };
 
@@ -105,10 +120,12 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
     const niches = criteria.niche ? [criteria.niche] : await fetchNiches();
     
     const results: KeywordResult[] = [];
+    let mockDataCount = 0;
+    let realDataCount = 0;
     
     // Process combinations in smaller batches to avoid overloading the API
     const batchSize = 3; // Process in small batches
-    let currentBatch: Promise<KeywordResult>[] = [];
+    let currentBatch: Promise<KeywordResult | null>[] = [];
     
     // Generate combinations of keywords and locations using real data
     for (const niche of niches) {
@@ -135,7 +152,13 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
         const processPromise = (async () => {
           try {
             // Get real search volume and CPC data from SerpAPI
-            const { searchVolume, cpc } = await fetchKeywordData(fullKeyword);
+            const { searchVolume, cpc, mockDataUsed } = await fetchKeywordData(fullKeyword);
+            
+            if (mockDataUsed) {
+              mockDataCount++;
+            } else {
+              realDataCount++;
+            }
             
             // Skip if doesn't meet search volume or CPC criteria
             if (searchVolume < criteria.searchVolume.min || 
@@ -184,6 +207,7 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
     }
     
     console.log(`Generated ${results.length} results after applying all filters`);
+    console.log(`Data sources: ${realDataCount} real data points, ${mockDataCount} mock data points`);
     
     return results;
   } catch (error) {
