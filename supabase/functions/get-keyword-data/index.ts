@@ -70,7 +70,7 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${MOZ_API_KEY}`,
+        'Authorization': `Basic ${btoa(`${MOZ_API_KEY}:`)}`,
         'Accept': 'application/json',
         'User-Agent': 'RankAndRentNicheFinder/1.0'
       },
