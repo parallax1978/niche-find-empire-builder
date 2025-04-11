@@ -1,3 +1,4 @@
+
 import { City, Niche, KeywordResult, SearchCriteria } from "../types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -203,7 +204,17 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
         }
       }
       
-      return results;
+      // Transform Supabase data to match our KeywordResult interface
+      return results.map(item => ({
+        id: item.id,
+        keyword: item.keyword,
+        searchVolume: item.search_volume,
+        cpc: item.cpc,
+        population: item.population,
+        domainAvailable: item.domain_available,
+        domainLink: item.domain_link,
+        exactMatchDomain: item.exact_match_domain
+      }));
     }
   } catch (error) {
     console.error("Error searching Supabase:", error);
