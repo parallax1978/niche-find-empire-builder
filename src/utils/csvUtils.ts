@@ -1,5 +1,5 @@
 
-import { City } from '@/types';
+import { City, Niche } from '@/types';
 
 export const parseCitiesCsv = (content: string): City[] => {
   const lines = content.split('\n');
@@ -118,3 +118,72 @@ export const parseCitiesCsv = (content: string): City[] => {
   return results;
 };
 
+export const parseNichesCsv = (content: string): Niche[] => {
+  const lines = content.split('\n');
+  const results: Niche[] = [];
+  let successCount = 0;
+  let skippedCount = 0;
+  
+  if (lines.length === 0) {
+    console.log("CSV file is empty");
+    return results;
+  }
+  
+  // Log the first few lines to help with debugging
+  console.log("First line of CSV:", lines[0]);
+  if (lines.length > 1) console.log("Second line of CSV:", lines[1]);
+  
+  // Look for header row
+  const headerRow = lines[0].toLowerCase();
+  const hasHeader = headerRow.includes('name') || headerRow.includes('niche');
+  
+  const startIndex = hasHeader ? 1 : 0;
+  
+  // Default to the first column for name
+  let nameIndex = 0;
+  
+  if (hasHeader) {
+    const headers = headerRow.split(',').map(h => h.trim().toLowerCase());
+    console.log("CSV headers:", headers);
+    
+    // Try to find a name or niche column
+    nameIndex = headers.indexOf('name') !== -1 ? headers.indexOf('name') : 
+               (headers.indexOf('niche') !== -1 ? headers.indexOf('niche') : 0);
+    
+    console.log(`Using nameIndex: ${nameIndex}`);
+  }
+  
+  for (let i = startIndex; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line) {
+      // Handle both comma and semicolon delimiters
+      const delimiter = line.includes(';') ? ';' : ',';
+      const values = line.split(delimiter).map(val => val.trim());
+      
+      if (values.length > nameIndex) {
+        const nicheName = values[nameIndex]?.trim().replace(/["']/g, '');
+        
+        if (nicheName) {
+          results.push({ 
+            id: results.length + 1, // Temporary ID generation
+            name: nicheName
+          });
+          
+          successCount++;
+        } else {
+          skippedCount++;
+        }
+      } else {
+        skippedCount++;
+      }
+    }
+  }
+  
+  console.log(`CSV parsing summary:
+  Total lines: ${lines.length}
+  Successfully parsed: ${successCount} niches
+  Skipped: ${skippedCount} lines
+  `);
+  
+  return results;
+};
