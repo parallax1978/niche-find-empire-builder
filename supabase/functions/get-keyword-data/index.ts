@@ -88,15 +88,19 @@ serve(async (req) => {
     try {
       console.log(`Fetching search volume from Moz API for keyword: "${keyword}"`)
       
-      // Call Moz Keyword Explorer API endpoint (updated to correct endpoint)
-      const mozResponse = await fetch('https://moz.com/api/keyword-explorer/search-volume', {
+      // Using the Moz API v2 endpoint for keyword metrics
+      const mozResponse = await fetch('https://api.moz.com/v2/keyword-metrics', {
         method: 'POST',
         headers: {
+          'Authorization': `Basic ${btoa(MOZ_API_KEY + ':')}`,
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${MOZ_API_KEY}`
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
-          keywords: [keyword]
+          keywords: [keyword],
+          locale: 'en-US',
+          source: 'google',
+          include_serps: false
         })
       });
       
@@ -109,12 +113,17 @@ serve(async (req) => {
       const mozData = await mozResponse.json();
       console.log(`Moz API data for "${keyword}":`, JSON.stringify(mozData, null, 2));
       
-      // Extract search volume from Moz response using the correct structure
-      if (mozData && mozData.data && mozData.data.length > 0) {
-        searchVolume = parseInt(mozData.data[0].volume) || 0;
-        console.log(`Successfully extracted real search volume from Moz API: ${searchVolume}`);
+      // Extract search volume from Moz API v2 response
+      if (mozData && mozData.results && mozData.results.length > 0) {
+        const keywordData = mozData.results[0];
+        if (keywordData.volume) {
+          searchVolume = parseInt(keywordData.volume) || 0;
+          console.log(`Successfully extracted real search volume from Moz API: ${searchVolume}`);
+        } else {
+          console.warn(`No volume data found in Moz API response for "${keyword}"`);
+        }
       } else {
-        console.warn(`Could not find volume data in Moz API response for "${keyword}"`);
+        console.warn(`Could not find data in Moz API response for "${keyword}"`);
       }
     } catch (mozError) {
       console.error(`Error getting search volume from Moz API: ${mozError.message}`);
