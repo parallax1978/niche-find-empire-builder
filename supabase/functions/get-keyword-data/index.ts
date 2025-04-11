@@ -57,7 +57,8 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${MOZ_API_KEY}`
+        'Authorization': `Bearer ${MOZ_API_KEY}`,
+        'User-Agent': 'Mozilla/5.0'
       },
       body: mozBody
     })
