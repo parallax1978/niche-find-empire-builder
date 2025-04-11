@@ -47,15 +47,12 @@ serve(async (req) => {
     }
     
     // Set up the Moz API request
-    const mozUrl = 'https://api.moz.com/v2/keyword_metrics'
+    const mozUrl = 'https://api.moz.com/v2/url_metrics'
     const mozBody = JSON.stringify({
-      keywords: [keyword]
+      urls: [keyword]
     })
     
     console.log('Sending request to Moz API...')
-    console.log('Request URL:', mozUrl)
-    console.log('Request body:', mozBody)
-    
     const mozResponse = await fetch(mozUrl, {
       method: 'POST',
       headers: {
