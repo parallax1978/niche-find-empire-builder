@@ -13,7 +13,7 @@ const toggleVariants = cva(
         default: "bg-transparent",
         outline:
           "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
-        purple: "data-[state=on]:bg-purple-500 data-[state=on]:text-white bg-purple-100 data-[state=off]:hover:bg-purple-200", // Updated track color variant
+        purple: "data-[state=on]:bg-purple-500 data-[state=on]:text-white", // New purple variant
       },
       size: {
         default: "h-10 px-3",
