@@ -524,7 +524,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                       className={`flex items-center gap-2 ${
                         isPopulationEnabled 
                           ? "bg-brand-gradient text-white hover:opacity-90" 
-                          : "bg-transparent text-muted-foreground hover:bg-accent"
+                          : "border border-brand-gradient/50 text-brand-gradient/70 hover:bg-brand-gradient/10"
                       }`}
                     >
                       {isPopulationEnabled ? (
@@ -532,7 +532,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                       ) : (
                         <Filter className="mr-2 h-4 w-4" />
                       )}
-                      {isPopulationEnabled ? "Enabled" : "Disabled"}
+                      {isPopulationEnabled ? "Enabled" : "Add Population Filter"}
                     </Button>
                   </div>
                 </div>
