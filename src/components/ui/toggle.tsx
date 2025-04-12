@@ -13,7 +13,7 @@ const toggleVariants = cva(
         default: "bg-transparent",
         outline:
           "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
-        purple: "data-[state=on]:bg-purple-500 data-[state=on]:text-white", // New purple variant
+        purple: "data-[state=on]:bg-purple-500 data-[state=on]:text-white", // Existing purple variant
       },
       size: {
         default: "h-10 px-3",
