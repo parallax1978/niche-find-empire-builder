@@ -16,8 +16,8 @@ const Slider = React.forwardRef<
     )}
     {...props}
   >
-    <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary">
-      <SliderPrimitive.Range className="absolute h-full bg-brand-gradient" />
+    <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-brand-from/30">
+      <SliderPrimitive.Range className="absolute h-full bg-brand-from" />
     </SliderPrimitive.Track>
     {props.value && props.value.map((_, index) => (
       <SliderPrimitive.Thumb 
