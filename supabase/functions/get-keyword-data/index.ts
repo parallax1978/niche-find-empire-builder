@@ -1,7 +1,8 @@
+
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
-const MOZ_API_KEY = Deno.env.get('MOZ_API_KEY')
-const MOZ_API_URL = 'https://api.moz.com/keyword-explorer/volume'
+const DATAFORSEO_LOGIN = Deno.env.get('DATAFORSEO_LOGIN')
+const DATAFORSEO_PASSWORD = Deno.env.get('DATAFORSEO_PASSWORD')
 
 interface KeywordResponse {
   keyword: string
@@ -23,8 +24,8 @@ serve(async (req) => {
     }
     const { keyword } = await req.json()
 
-    if (!MOZ_API_KEY) {
-      throw new Error('MOZ_API_KEY not configured')
+    if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) {
+      throw new Error('DataForSEO credentials not configured')
     }
 
     if (!keyword) {
@@ -33,42 +34,61 @@ serve(async (req) => {
 
     console.log(`Processing keyword: ${keyword}`)
 
-    const mozBody = JSON.stringify({
-      keywords: [keyword],
-      source: 'googlesearchapi',
-      region: 'us',
-      language: 'en'
-    })
+    // Base64 encode the DataForSEO credentials
+    const credentials = btoa(`${DATAFORSEO_LOGIN}:${DATAFORSEO_PASSWORD}`)
 
-    const mozHeaders = {
+    // Prepare the DataForSEO request body
+    const dataForSeoBody = JSON.stringify([
+      {
+        keyword: keyword,
+        location_code: 2840, // USA location code
+        language_code: 'en'
+      }
+    ])
+
+    const dataForSeoHeaders = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${MOZ_API_KEY}`,
-      'Accept': 'application/json',
-      'User-Agent': 'NicheFindEmpireBuilder/1.0'
+      'Authorization': `Basic ${credentials}`
     }
 
-    console.log('Sending request to Moz API...')
+    console.log('Sending request to DataForSEO API...')
 
-    const mozResponse = await fetch(MOZ_API_URL, {
+    const dataForSeoResponse = await fetch('https://api.dataforseo.com/v3/keywords_data/google/search_volume/live', {
       method: 'POST',
-      headers: mozHeaders,
-      body: mozBody,
-      cache: 'no-store'
+      headers: dataForSeoHeaders,
+      body: dataForSeoBody
     })
 
-    if (!mozResponse.ok) {
-      const errorText = await mozResponse.text()
-      throw new Error(`Moz API returned status ${mozResponse.status}: ${errorText}`)
+    if (!dataForSeoResponse.ok) {
+      const errorText = await dataForSeoResponse.text()
+      throw new Error(`DataForSEO API returned status ${dataForSeoResponse.status}: ${errorText}`)
     }
 
-    const mozData = await mozResponse.json()
-    const keywordData = mozData.results?.[0] || {}
+    const dataForSeoData = await dataForSeoResponse.json()
+    
+    if (!dataForSeoData.tasks || !dataForSeoData.tasks[0] || dataForSeoData.tasks[0].status_code !== 20000) {
+      throw new Error(`DataForSEO API error: ${JSON.stringify(dataForSeoData)}`)
+    }
 
-    // Mock response for development/testing
+    // Extract the search volume and CPC data
+    let searchVolume = 0
+    let cpc = 0
+
+    if (dataForSeoData.tasks[0].result && dataForSeoData.tasks[0].result.length > 0) {
+      const keywordData = dataForSeoData.tasks[0].result[0]
+      if (keywordData.search_volume) {
+        searchVolume = keywordData.search_volume
+      }
+      if (keywordData.cpc) {
+        cpc = keywordData.cpc
+      }
+    }
+
+    // Prepare the response
     const response: KeywordResponse = {
       keyword,
-      searchVolume: keywordData.volume || Math.floor(Math.random() * 10000),
-      cpc: keywordData.cpc || (Math.random() * 10).toFixed(2)
+      searchVolume,
+      cpc
     }
 
     return new Response(JSON.stringify(response), {

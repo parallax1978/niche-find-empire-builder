@@ -59,7 +59,7 @@ export const fetchNiches = async (): Promise<Niche[]> => {
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Fetch keyword data from our edge function
+// Fetch keyword data from our edge function using DataForSEO
 const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number, cpc: number, errorMessage?: string }> => {
   try {
     console.log(`Fetching data for keyword: ${keyword}`);
@@ -73,7 +73,7 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
       throw new Error(error?.message || 'Failed to fetch keyword data');
     }
 
-    // Add delay between requests
+    // Add delay between requests to avoid rate limiting
     await delay(1000);
 
     return {
