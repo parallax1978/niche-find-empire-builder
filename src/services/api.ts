@@ -1,8 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { City, Niche, SearchCriteria, KeywordResult } from "@/types";
-
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yYnhvc2hudHh3c3Bkem9rY2RpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzOTAzMDYsImV4cCI6MjA1OTk2NjMwNn0.6F89Z4dkoUHafH0QAgu35ayeNE9_A9PQ6XaaV04zi-U";
 
 // Fetch cities from the database with optional search query
 export const fetchCities = async (searchQuery?: string): Promise<City[]> => {
