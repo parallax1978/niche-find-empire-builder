@@ -524,7 +524,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                       className={`flex items-center gap-2 ${
                         isPopulationEnabled 
                           ? "bg-brand-gradient text-white hover:opacity-90" 
-                          : "border border-brand-gradient/50 text-brand-gradient bg-transparent hover:bg-brand-gradient/10"
+                          : "bg-brand-gradient text-white hover:opacity-90 bg-opacity-50"
                       }`}
                     >
                       {isPopulationEnabled ? (
