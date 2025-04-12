@@ -9,14 +9,9 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Niche, City, SearchCriteria } from "@/types";
-import { fetchCities, fetchNiches } from "@/services/api";
+import { Toggle } from "@/components/ui/toggle";
 import { Search, Filter, X, AlertTriangle, Check, ChevronsUpDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -587,10 +582,11 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                       : '3D Rendering Tampa (3drenderingtampa.com)'}
                   </div>
                 </div>
-                <Switch
+                <Toggle
                   id="location-first"
-                  checked={locationFirst}
-                  onCheckedChange={setLocationFirst}
+                  variant="purple"
+                  pressed={locationFirst}
+                  onPressedChange={setLocationFirst}
                 />
               </div>
             </div>
