@@ -1,32 +1,27 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { City, Niche, SearchCriteria, KeywordResult } from "@/types";
 
-// Fetch cities from the database with optional search query
-export const fetchCities = async (searchQuery?: string): Promise<City[]> => {
-  try {
-    let query = supabase
-      .from('cities')
-      .select('*');
-    
-    // If search query is provided, filter by name
-    if (searchQuery && searchQuery.trim().length >= 2) {
-      const term = searchQuery.trim().toLowerCase();
-      query = query.ilike('name', `%${term}%`);
-    } else {
-      // If no search query, just return top cities by population
-      query = query.order('population', { ascending: false }).limit(100);
-    }
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yYnhvc2hudHh3c3Bkem9rY2RpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzOTAzMDYsImV4cCI6MjA1OTk2NjMwNn0.6F89Z4dkoUHafH0QAgu35ayeNE9_A9PQ6XaaV04zi-U";
 
-    const { data, error } = await query.order('name');
+// Fetch cities from the database
+export const fetchCities = async (): Promise<City[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('cities')
+      .select('*')
+      .order('population', { ascending: false })
+      .order('name');
 
     if (error) {
       console.error("Error fetching cities:", error);
       throw error;
     }
 
-    console.log(`Fetched ${data?.length} cities${searchQuery ? ` matching "${searchQuery}"` : " (top by population)"}`);
+    console.log("Fetched cities:", data);
+    console.log("Number of cities:", data?.length);
 
-    if (!data) {
+    if (!data || data.length === 0) {
       throw new Error("No cities found in the database");
     }
 
@@ -37,32 +32,22 @@ export const fetchCities = async (searchQuery?: string): Promise<City[]> => {
   }
 };
 
-// Fetch niches from the database with optional search query
-export const fetchNiches = async (searchQuery?: string): Promise<Niche[]> => {
+// Fetch niches from the database
+export const fetchNiches = async (): Promise<Niche[]> => {
   try {
-    let query = supabase
+    const { data, error } = await supabase
       .from('niches')
-      .select('*');
-    
-    // If search query is provided, filter by name
-    if (searchQuery && searchQuery.trim().length >= 2) {
-      const term = searchQuery.trim().toLowerCase();
-      query = query.ilike('name', `%${term}%`);
-    } else {
-      // If no search query, just return them all (niches should be a smaller dataset)
-      query = query.limit(100);
-    }
-
-    const { data, error } = await query.order('name');
+      .select('*')
+      .order('name');
 
     if (error) {
       console.error("Error fetching niches:", error);
       throw error;
     }
 
-    console.log(`Fetched ${data?.length} niches${searchQuery ? ` matching "${searchQuery}"` : ""}`);
+    console.log("Fetched niches:", data);
 
-    if (!data) {
+    if (!data || data.length === 0) {
       throw new Error("No niches found in the database");
     }
 

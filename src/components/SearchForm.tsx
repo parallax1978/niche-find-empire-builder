@@ -32,7 +32,6 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   const [cities, setCities] = useState<City[]>([]);
   const [filteredCities, setFilteredCities] = useState<City[]>([]);
   const [citySearchValue, setCitySearchValue] = useState("");
-  const [nicheSearchValue, setNicheSearchValue] = useState("");
   const [selectedNiche, setSelectedNiche] = useState<Niche | undefined>(undefined);
   const [selectedCity, setSelectedCity] = useState<City | undefined>(undefined);
   const [searchVolumeRange, setSearchVolumeRange] = useState([0, 25000]);
@@ -47,99 +46,82 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   const [isPopulationEnabled, setIsPopulationEnabled] = useState(false);
   const [locationFirst, setLocationFirst] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isLoadingCities, setIsLoadingCities] = useState(false);
-  const [isLoadingNiches, setIsLoadingNiches] = useState(false);
+  const [isLoading1, setIsLoading1] = useState(true);
   const [openNichePopover, setOpenNichePopover] = useState(false);
   const [openCityPopover, setOpenCityPopover] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    const loadInitialData = async () => {
+    const loadData = async () => {
+      setIsLoading1(true);
+      setError(null);
+      
       try {
-        const initialCities = await fetchCities();
-        setCities(initialCities);
-        setFilteredCities(initialCities);
+        const [nichesData, citiesData] = await Promise.all([
+          fetchNiches().catch(err => {
+            console.error("Failed to load niches:", err);
+            toast({
+              title: "Error loading niches",
+              description: "Could not load niches from the database",
+              variant: "destructive",
+            });
+            throw err;
+          }),
+          fetchCities().catch(err => {
+            console.error("Failed to load cities:", err);
+            toast({
+              title: "Error loading cities",
+              description: "Could not load cities from the database",
+              variant: "destructive",
+            });
+            throw err;
+          })
+        ]);
         
-        const initialNiches = await fetchNiches();
-        setNiches(initialNiches);
+        setNiches(nichesData);
+        setCities(citiesData);
+        setFilteredCities(citiesData.slice(0, 100));
         
-        console.log(`Loaded initial data: ${initialCities.length} cities and ${initialNiches.length} niches`);
+        console.log(`Loaded ${citiesData.length} cities and ${nichesData.length} niches`);
       } catch (error) {
-        console.error("Error loading initial form data:", error);
-        setError("Failed to load initial data from the database.");
+        console.error("Error loading form data:", error);
+        setError("Failed to load data from the database. Please check if your CSV data was uploaded correctly.");
+      } finally {
+        setIsLoading1(false);
       }
     };
 
-    loadInitialData();
-  }, []);
+    loadData();
+  }, [toast]);
 
   useEffect(() => {
-    const searchCities = async () => {
-      if (citySearchValue.trim().length < 2) {
-        try {
-          const initialCities = await fetchCities();
-          setCities(initialCities);
-          setFilteredCities(initialCities);
-        } catch (error) {
-          console.error("Error resetting cities:", error);
-        }
-        return;
-      }
+    if (citySearchValue.trim() === "") {
+      setFilteredCities(cities.slice(0, 100));
+    } else {
+      const searchTerm = citySearchValue.toLowerCase().trim();
       
-      setIsLoadingCities(true);
+      const matches = cities.filter(city => 
+        city.name.toLowerCase().includes(searchTerm)
+      );
       
-      try {
-        const results = await fetchCities(citySearchValue);
-        setCities(results);
-        setFilteredCities(results);
-      } catch (error) {
-        console.error("Error searching cities:", error);
-        toast({
-          title: "Error searching cities",
-          description: "Could not search cities in the database",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoadingCities(false);
-      }
-    };
-    
-    const timer = setTimeout(searchCities, 300);
-    return () => clearTimeout(timer);
-  }, [citySearchValue, toast]);
+      setFilteredCities(matches.slice(0, 100));
+    }
+  }, [citySearchValue, cities]);
 
   useEffect(() => {
-    const searchNiches = async () => {
-      if (nicheSearchValue.trim().length < 2) {
-        try {
-          const initialNiches = await fetchNiches();
-          setNiches(initialNiches);
-        } catch (error) {
-          console.error("Error resetting niches:", error);
-        }
-        return;
-      }
-      
-      setIsLoadingNiches(true);
-      
-      try {
-        const results = await fetchNiches(nicheSearchValue);
-        setNiches(results);
-      } catch (error) {
-        console.error("Error searching niches:", error);
-        toast({
-          title: "Error searching niches",
-          description: "Could not search niches in the database",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoadingNiches(false);
-      }
-    };
-    
-    const timer = setTimeout(searchNiches, 300);
-    return () => clearTimeout(timer);
-  }, [nicheSearchValue, toast]);
+    setSearchVolumeMin(searchVolumeRange[0].toString());
+    setSearchVolumeMax(searchVolumeRange[1].toString());
+  }, [searchVolumeRange]);
+
+  useEffect(() => {
+    setCpcMin(cpcRange[0].toString());
+    setCpcMax(cpcRange[1].toString());
+  }, [cpcRange]);
+
+  useEffect(() => {
+    setPopulationMin(populationRange[0].toString());
+    setPopulationMax(populationRange[1].toString());
+  }, [populationRange]);
 
   const handleSearchVolumeInputChange = (isMin: boolean, value: string) => {
     if (value !== "" && !/^\d+$/.test(value)) return;
@@ -293,40 +275,41 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
           </Alert>
         )}
         
-        <div>
-          <h3 className="text-sm font-semibold text-muted-foreground mb-3">SEARCH PARAMETERS</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
-            <div className="space-y-2">
-              <Label htmlFor="niche">Niche (Optional)</Label>
-              <div className="relative">
-                <Popover open={openNichePopover} onOpenChange={setOpenNichePopover}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openNichePopover}
-                      className="w-full justify-between"
-                    >
-                      {selectedNiche
-                        ? selectedNiche.name
-                        : "Select a niche (optional)"}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0" align="start">
-                    <Command>
-                      <CommandInput 
-                        placeholder="Search niches..." 
-                        value={nicheSearchValue}
-                        onValueChange={setNicheSearchValue}
-                      />
-                      <CommandList className="max-h-[300px] overflow-y-auto">
-                        {isLoadingNiches ? (
-                          <div className="py-6 text-center text-sm text-muted-foreground">
-                            Searching niches...
-                          </div>
-                        ) : (
-                          <>
+        {isLoading1 ? (
+          <div className="flex justify-center items-center py-8">
+            <p className="text-muted-foreground">Loading data from database...</p>
+          </div>
+        ) : (
+          <>
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">SEARCH PARAMETERS</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
+                <div className="space-y-2">
+                  <Label htmlFor="niche">Niche (Optional)</Label>
+                  <div className="relative">
+                    <Popover open={openNichePopover} onOpenChange={setOpenNichePopover}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openNichePopover}
+                          className="w-full justify-between"
+                          disabled={niches.length === 0}
+                        >
+                          {selectedNiche
+                            ? selectedNiche.name
+                            : niches.length === 0 
+                              ? "No niches available" 
+                              : "Select a niche (optional)"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput 
+                            placeholder="Search niches..." 
+                          />
+                          <CommandList className="max-h-[300px] overflow-y-auto">
                             <CommandEmpty>No niche found.</CommandEmpty>
                             <CommandGroup>
                               {niches.map((niche) => (
@@ -336,7 +319,6 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                                   onSelect={() => {
                                     setSelectedNiche(niche);
                                     setOpenNichePopover(false);
-                                    setNicheSearchValue("");
                                   }}
                                 >
                                   <Check
@@ -349,58 +331,53 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                                 </CommandItem>
                               ))}
                             </CommandGroup>
-                          </>
-                        )}
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                {selectedNiche && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-8 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
-                    onClick={clearNiche}
-                  >
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Clear</span>
-                  </Button>
-                )}
-              </div>
-            </div>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {selectedNiche && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-8 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+                        onClick={clearNiche}
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Clear</span>
+                      </Button>
+                    )}
+                  </div>
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="city">City (Optional)</Label>
-              <div className="relative">
-                <Popover open={openCityPopover} onOpenChange={setOpenCityPopover}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openCityPopover}
-                      className="w-full justify-between"
-                    >
-                      {selectedCity
-                        ? `${selectedCity.name}${selectedCity.state ? `, ${selectedCity.state}` : ''} (${selectedCity.population.toLocaleString()})`
-                        : "Select a city (optional)"}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0" align="start">
-                    <Command>
-                      <CommandInput 
-                        placeholder="Search cities..." 
-                        value={citySearchValue}
-                        onValueChange={setCitySearchValue}
-                      />
-                      <CommandList className="max-h-[300px] overflow-y-auto">
-                        {isLoadingCities ? (
-                          <div className="py-6 text-center text-sm text-muted-foreground">
-                            Searching cities...
-                          </div>
-                        ) : (
-                          <>
+                <div className="space-y-2">
+                  <Label htmlFor="city">City (Optional)</Label>
+                  <div className="relative">
+                    <Popover open={openCityPopover} onOpenChange={setOpenCityPopover}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openCityPopover}
+                          className="w-full justify-between"
+                          disabled={cities.length === 0}
+                        >
+                          {selectedCity
+                            ? `${selectedCity.name}${selectedCity.state ? `, ${selectedCity.state}` : ''} (${selectedCity.population.toLocaleString()})`
+                            : cities.length === 0 
+                              ? "No cities available" 
+                              : "Select a city (optional)"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput 
+                            placeholder="Search cities..." 
+                            value={citySearchValue}
+                            onValueChange={setCitySearchValue}
+                          />
+                          <CommandList className="max-h-[300px] overflow-y-auto">
                             <CommandEmpty>No city found.</CommandEmpty>
                             <CommandGroup>
                               {filteredCities.map((city) => (
@@ -423,205 +400,220 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                                 </CommandItem>
                               ))}
                             </CommandGroup>
-                          </>
-                        )}
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                {selectedCity && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-8 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
-                    onClick={clearCity}
-                  >
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Clear</span>
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between pt-2 pb-4">
-            <div className="space-y-0.5">
-              <Label htmlFor="location-first">Location First</Label>
-              <div className="text-sm text-muted-foreground">
-                {locationFirst 
-                  ? 'Tampa 3D Rendering (tampa3drendering.com)' 
-                  : '3D Rendering Tampa (3drenderingtampa.com)'}
-              </div>
-            </div>
-            <Switch
-              id="location-first"
-              checked={locationFirst}
-              onCheckedChange={setLocationFirst}
-            />
-          </div>
-        </div>
-        
-        <Separator />
-        
-        <div>
-          <h3 className="text-sm font-semibold text-muted-foreground mb-3">KEYWORD METRICS</h3>
-          
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="search-volume">Search Volume</Label>
-              </div>
-              <div className="grid grid-cols-5 gap-4 items-center">
-                <div className="col-span-1">
-                  <Input
-                    type="text"
-                    value={searchVolumeMin}
-                    onChange={(e) => handleSearchVolumeInputChange(true, e.target.value)}
-                    onBlur={() => handleSearchVolumeInputBlur(true)}
-                    className="w-full"
-                    aria-label="Minimum search volume"
-                  />
-                </div>
-                <div className="col-span-3">
-                  <Slider
-                    id="search-volume"
-                    min={0}
-                    max={25000}
-                    step={1000}
-                    value={searchVolumeRange}
-                    onValueChange={setSearchVolumeRange}
-                    className="py-4"
-                  />
-                </div>
-                <div className="col-span-1">
-                  <Input
-                    type="text"
-                    value={searchVolumeMax}
-                    onChange={(e) => handleSearchVolumeInputChange(false, e.target.value)}
-                    onBlur={() => handleSearchVolumeInputBlur(false)}
-                    className="w-full"
-                    aria-label="Maximum search volume"
-                  />
+                          </CommandList>
+                          {citySearchValue.trim() === "" && cities.length > 100 && (
+                            <div className="py-2 px-2 text-xs text-center text-muted-foreground">
+                              Showing top 100 cities by population. Type to search for more.
+                            </div>
+                          )}
+                          {citySearchValue.trim() !== "" && filteredCities.length >= 100 && (
+                            <div className="py-2 px-2 text-xs text-center text-muted-foreground">
+                              Showing first 100 matches. Try a more specific search if needed.
+                            </div>
+                          )}
+                          {citySearchValue.trim() !== "" && filteredCities.length === 0 && (
+                            <div className="py-2 px-2 text-xs text-center text-muted-foreground">
+                              No cities found. Try a different search term.
+                            </div>
+                          )}
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {selectedCity && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-8 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+                        onClick={clearCity}
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Clear</span>
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="text-sm text-center text-muted-foreground">
-                {parseInt(searchVolumeMin).toLocaleString()} - {parseInt(searchVolumeMax).toLocaleString()}
+              
+              <div className="flex items-center justify-between pt-2 pb-4">
+                <div className="space-y-0.5">
+                  <Label htmlFor="location-first">Location First</Label>
+                  <div className="text-sm text-muted-foreground">
+                    {locationFirst 
+                      ? 'Tampa 3D Rendering (tampa3drendering.com)' 
+                      : '3D Rendering Tampa (3drenderingtampa.com)'}
+                  </div>
+                </div>
+                <Switch
+                  id="location-first"
+                  checked={locationFirst}
+                  onCheckedChange={setLocationFirst}
+                />
               </div>
             </div>
+            
+            <Separator />
+            
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">KEYWORD METRICS</h3>
+              
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label htmlFor="search-volume">Search Volume</Label>
+                  </div>
+                  <div className="grid grid-cols-5 gap-4 items-center">
+                    <div className="col-span-1">
+                      <Input
+                        type="text"
+                        value={searchVolumeMin}
+                        onChange={(e) => handleSearchVolumeInputChange(true, e.target.value)}
+                        onBlur={() => handleSearchVolumeInputBlur(true)}
+                        className="w-full"
+                        aria-label="Minimum search volume"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Slider
+                        id="search-volume"
+                        min={0}
+                        max={25000}
+                        step={1000}
+                        value={searchVolumeRange}
+                        onValueChange={setSearchVolumeRange}
+                        className="py-4"
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Input
+                        type="text"
+                        value={searchVolumeMax}
+                        onChange={(e) => handleSearchVolumeInputChange(false, e.target.value)}
+                        onBlur={() => handleSearchVolumeInputBlur(false)}
+                        className="w-full"
+                        aria-label="Maximum search volume"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-sm text-center text-muted-foreground">
+                    {parseInt(searchVolumeMin).toLocaleString()} - {parseInt(searchVolumeMax).toLocaleString()}
+                  </div>
+                </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="cpc">Cost Per Click (CPC)</Label>
-              </div>
-              <div className="grid grid-cols-5 gap-4 items-center">
-                <div className="col-span-1">
-                  <Input
-                    type="text"
-                    value={cpcMin}
-                    onChange={(e) => handleCpcInputChange(true, e.target.value)}
-                    onBlur={() => handleCpcInputBlur(true)}
-                    className="w-full"
-                    aria-label="Minimum CPC"
-                  />
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label htmlFor="cpc">Cost Per Click (CPC)</Label>
+                  </div>
+                  <div className="grid grid-cols-5 gap-4 items-center">
+                    <div className="col-span-1">
+                      <Input
+                        type="text"
+                        value={cpcMin}
+                        onChange={(e) => handleCpcInputChange(true, e.target.value)}
+                        onBlur={() => handleCpcInputBlur(true)}
+                        className="w-full"
+                        aria-label="Minimum CPC"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Slider
+                        id="cpc"
+                        min={0}
+                        max={1000}
+                        step={0.1}
+                        value={cpcRange}
+                        onValueChange={setCpcRange}
+                        className="py-4"
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Input
+                        type="text"
+                        value={cpcMax}
+                        onChange={(e) => handleCpcInputChange(false, e.target.value)}
+                        onBlur={() => handleCpcInputBlur(false)}
+                        className="w-full"
+                        aria-label="Maximum CPC"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-sm text-center text-muted-foreground">
+                    ${parseFloat(cpcMin).toFixed(2)} - ${parseFloat(cpcMax).toFixed(2)}
+                  </div>
                 </div>
-                <div className="col-span-3">
-                  <Slider
-                    id="cpc"
-                    min={0}
-                    max={1000}
-                    step={0.1}
-                    value={cpcRange}
-                    onValueChange={setCpcRange}
-                    className="py-4"
-                  />
-                </div>
-                <div className="col-span-1">
-                  <Input
-                    type="text"
-                    value={cpcMax}
-                    onChange={(e) => handleCpcInputChange(false, e.target.value)}
-                    onBlur={() => handleCpcInputBlur(false)}
-                    className="w-full"
-                    aria-label="Maximum CPC"
-                  />
-                </div>
-              </div>
-              <div className="text-sm text-center text-muted-foreground">
-                ${parseFloat(cpcMin).toFixed(2)} - ${parseFloat(cpcMax).toFixed(2)}
               </div>
             </div>
-          </div>
-        </div>
-        
-        <Separator />
-        
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-muted-foreground">POPULATION FILTER</h3>
-            <Button
-              type="button"
-              variant={isPopulationEnabled ? "default" : "outline"}
-              size="sm"
-              onClick={() => setIsPopulationEnabled(!isPopulationEnabled)}
-              className={isPopulationEnabled ? "" : "border-dashed"}
-            >
-              {isPopulationEnabled ? (
-                <Check className="mr-2 h-4 w-4" />
-              ) : (
-                <Filter className="mr-2 h-4 w-4" />
+            
+            <Separator />
+            
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-muted-foreground">POPULATION FILTER</h3>
+                <Button
+                  type="button"
+                  variant={isPopulationEnabled ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setIsPopulationEnabled(!isPopulationEnabled)}
+                  className={isPopulationEnabled ? "" : "border-dashed"}
+                >
+                  {isPopulationEnabled ? (
+                    <Check className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Filter className="mr-2 h-4 w-4" />
+                  )}
+                  {isPopulationEnabled ? "Filter Active" : "Add Filter"}
+                </Button>
+              </div>
+              
+              {isPopulationEnabled && (
+                <div className="space-y-2 pt-2 pb-1">
+                  <div className="grid grid-cols-5 gap-4 items-center">
+                    <div className="col-span-1">
+                      <Input
+                        type="text"
+                        value={populationMin}
+                        onChange={(e) => handlePopulationInputChange(true, e.target.value)}
+                        onBlur={() => handlePopulationInputBlur(true)}
+                        className="w-full"
+                        aria-label="Minimum population"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Slider
+                        id="population"
+                        min={0}
+                        max={10000000}
+                        step={10000}
+                        value={populationRange}
+                        onValueChange={setPopulationRange}
+                        className="py-4"
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Input
+                        type="text"
+                        value={populationMax}
+                        onChange={(e) => handlePopulationInputChange(false, e.target.value)}
+                        onBlur={() => handlePopulationInputBlur(false)}
+                        className="w-full"
+                        aria-label="Maximum population"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-sm text-center text-muted-foreground">
+                    {parseInt(populationMin).toLocaleString()} - {parseInt(populationMax).toLocaleString()}
+                  </div>
+                </div>
               )}
-              {isPopulationEnabled ? "Filter Active" : "Add Filter"}
-            </Button>
-          </div>
-          
-          {isPopulationEnabled && (
-            <div className="space-y-2 pt-2 pb-1">
-              <div className="grid grid-cols-5 gap-4 items-center">
-                <div className="col-span-1">
-                  <Input
-                    type="text"
-                    value={populationMin}
-                    onChange={(e) => handlePopulationInputChange(true, e.target.value)}
-                    onBlur={() => handlePopulationInputBlur(true)}
-                    className="w-full"
-                    aria-label="Minimum population"
-                  />
-                </div>
-                <div className="col-span-3">
-                  <Slider
-                    id="population"
-                    min={0}
-                    max={10000000}
-                    step={10000}
-                    value={populationRange}
-                    onValueChange={setPopulationRange}
-                    className="py-4"
-                  />
-                </div>
-                <div className="col-span-1">
-                  <Input
-                    type="text"
-                    value={populationMax}
-                    onChange={(e) => handlePopulationInputChange(false, e.target.value)}
-                    onBlur={() => handlePopulationInputBlur(false)}
-                    className="w-full"
-                    aria-label="Maximum population"
-                  />
-                </div>
-              </div>
-              <div className="text-sm text-center text-muted-foreground">
-                {parseInt(populationMin).toLocaleString()} - {parseInt(populationMax).toLocaleString()}
-              </div>
             </div>
-          )}
-        </div>
+          </>
+        )}
       </CardContent>
       
       <CardFooter className="pt-2">
         <Button 
           onClick={handleSubmit} 
-          disabled={isLoading || isLoadingCities || isLoadingNiches}
+          disabled={isLoading || isLoading1 || (cities.length === 0 && niches.length === 0)}
           className="w-full"
           size="lg"
         >

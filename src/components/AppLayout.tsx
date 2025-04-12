@@ -21,54 +21,54 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       {/* Header Navigation */}
       <header className="border-b bg-white shadow-sm">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center">
+          <div className="flex items-center justify-between">
             <div className="flex items-center">
               <h1 className="text-xl font-bold bg-brand-gradient bg-clip-text text-transparent mr-8">
                 Rank & Rent Finder
               </h1>
+              
+              <nav className="hidden md:flex space-x-4">
+                <Link 
+                  to="/" 
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors", 
+                    isActive("/") 
+                      ? "bg-brand-gradient text-white" 
+                      : "text-gray-700 hover:bg-gray-100"
+                  )}
+                >
+                  <Home className="h-4 w-4" />
+                  <span>Home</span>
+                </Link>
+                <Link 
+                  to="/search" 
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors", 
+                    isActive("/search") 
+                      ? "bg-brand-gradient text-white" 
+                      : "text-gray-700 hover:bg-gray-100"
+                  )}
+                >
+                  <Search className="h-4 w-4" />
+                  <span>Search</span>
+                </Link>
+                <Link 
+                  to="/admin" 
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors", 
+                    isActive("/admin") 
+                      ? "bg-brand-gradient text-white" 
+                      : "text-gray-700 hover:bg-gray-100"
+                  )}
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>Admin</span>
+                </Link>
+              </nav>
             </div>
             
-            <nav className="hidden md:flex space-x-4 ml-auto">
-              <Link 
-                to="/" 
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors", 
-                  isActive("/") 
-                    ? "bg-brand-gradient text-white" 
-                    : "text-gray-700 hover:bg-gray-100"
-                )}
-              >
-                <Home className="h-4 w-4" />
-                <span>Home</span>
-              </Link>
-              <Link 
-                to="/admin" 
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors", 
-                  isActive("/admin") 
-                    ? "bg-brand-gradient text-white" 
-                    : "text-gray-700 hover:bg-gray-100"
-                )}
-              >
-                <Settings className="h-4 w-4" />
-                <span>Admin</span>
-              </Link>
-              <Link 
-                to="/search" 
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors", 
-                  isActive("/search") 
-                    ? "bg-brand-gradient text-white" 
-                    : "text-gray-700 hover:bg-gray-100"
-                )}
-              >
-                <Search className="h-4 w-4" />
-                <span>Search</span>
-              </Link>
-            </nav>
-            
             {/* Mobile Navigation Links */}
-            <div className="md:hidden flex items-center space-x-2 ml-auto">
+            <div className="md:hidden flex items-center space-x-2">
               <Link 
                 to="/" 
                 className={cn(
@@ -81,17 +81,6 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 <Home className="h-5 w-5" />
               </Link>
               <Link 
-                to="/admin" 
-                className={cn(
-                  "p-2 rounded-md", 
-                  isActive("/admin") 
-                    ? "bg-brand-gradient text-white" 
-                    : "text-gray-700 hover:bg-gray-100"
-                )}
-              >
-                <Settings className="h-5 w-5" />
-              </Link>
-              <Link 
                 to="/search" 
                 className={cn(
                   "p-2 rounded-md", 
@@ -101,6 +90,17 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 )}
               >
                 <Search className="h-5 w-5" />
+              </Link>
+              <Link 
+                to="/admin" 
+                className={cn(
+                  "p-2 rounded-md", 
+                  isActive("/admin") 
+                    ? "bg-brand-gradient text-white" 
+                    : "text-gray-700 hover:bg-gray-100"
+                )}
+              >
+                <Settings className="h-5 w-5" />
               </Link>
             </div>
           </div>
