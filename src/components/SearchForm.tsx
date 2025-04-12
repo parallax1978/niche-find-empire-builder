@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { 
   Card, 
   CardContent, 
@@ -36,7 +37,11 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   const [searchVolumeMin, setSearchVolumeMin] = useState<string>("0");
   const [searchVolumeMax, setSearchVolumeMax] = useState<string>("25000");
   const [cpcRange, setCpcRange] = useState([0, 1000]);
+  const [cpcMin, setCpcMin] = useState<string>("0");
+  const [cpcMax, setCpcMax] = useState<string>("1000");
   const [populationRange, setPopulationRange] = useState([0, 10000000]);
+  const [populationMin, setPopulationMin] = useState<string>("0");
+  const [populationMax, setPopulationMax] = useState<string>("10000000");
   const [isPopulationEnabled, setIsPopulationEnabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading1, setIsLoading1] = useState(true);
@@ -514,14 +519,10 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                   <div className="flex items-center">
                     <Button
                       type="button"
-                      variant={isPopulationEnabled ? "default" : "outline"}
+                      variant="outline"
                       size="sm"
                       onClick={() => setIsPopulationEnabled(!isPopulationEnabled)}
-                      className={`flex items-center gap-2 ${
-                        isPopulationEnabled 
-                          ? "bg-brand-gradient text-white hover:opacity-90" 
-                          : "bg-brand-gradient text-white hover:opacity-90 bg-opacity-50"
-                      }`}
+                      className="bg-brand-gradient text-white hover:opacity-90"
                     >
                       {isPopulationEnabled ? (
                         <Check className="mr-2 h-4 w-4" />
