@@ -139,20 +139,18 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
   
   if (results.length === 0) {
     return (
-      <div className="mt-8 text-center">
+      <div className="mt-4 text-center p-8 bg-gray-50 rounded-md border border-gray-100">
         <p className="text-muted-foreground">No results found. Try adjusting your search criteria.</p>
       </div>
     );
   }
 
   return (
-    <div className="mt-8 space-y-4">
-      <h2 className="text-2xl font-bold">Results ({results.length})</h2>
-      
-      <div className="rounded-lg border shadow-sm overflow-hidden">
+    <div className="space-y-4">
+      <div className="rounded-md overflow-hidden border-0">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="bg-gray-50">
               <TableHead>Keyword</TableHead>
               <TableHead>EMD</TableHead>
               <TableHead className="text-right">Search Volume</TableHead>
@@ -168,7 +166,7 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
             {currentResults.map((result) => {
               const resultWithStatus = ensureDomainStatus(result);
               return (
-                <TableRow key={result.id}>
+                <TableRow key={result.id} className="hover:bg-gray-50/80">
                   <TableCell className="font-medium">{result.keyword}</TableCell>
                   <TableCell className="font-mono text-sm">{result.exactMatchDomain}</TableCell>
                   <TableCell className="text-right">{formatNumber(result.searchVolume)}</TableCell>
@@ -198,34 +196,37 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
       </div>
       
       {totalPages > 1 && (
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                isActive={currentPage > 1}
-              />
-            </PaginationItem>
-            
-            {getPageNumbers().map((pageNum) => (
-              <PaginationItem key={pageNum}>
-                <PaginationLink
-                  onClick={() => setCurrentPage(pageNum)}
-                  isActive={currentPage === pageNum}
-                >
-                  {pageNum}
-                </PaginationLink>
+        <div className="mt-4">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  className={currentPage > 1 ? "cursor-pointer hover:bg-gray-100" : "opacity-50 pointer-events-none"}
+                />
               </PaginationItem>
-            ))}
-            
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                isActive={currentPage < totalPages}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+              
+              {getPageNumbers().map((pageNum) => (
+                <PaginationItem key={pageNum}>
+                  <PaginationLink
+                    onClick={() => setCurrentPage(pageNum)}
+                    isActive={currentPage === pageNum}
+                    className="cursor-pointer"
+                  >
+                    {pageNum}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  className={currentPage < totalPages ? "cursor-pointer hover:bg-gray-100" : "opacity-50 pointer-events-none"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
       )}
     </div>
   );

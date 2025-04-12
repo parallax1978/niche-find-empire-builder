@@ -9,6 +9,7 @@ import { searchNiches } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Search = () => {
   const [results, setResults] = useState<KeywordResult[]>([]);
@@ -63,7 +64,7 @@ const Search = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-12">
       <Container>
         <div className="py-8">
           <div className="space-y-8">
@@ -91,9 +92,22 @@ const Search = () => {
               <LoadingState />
             ) : (
               hasSearched && (
-                <div className="mt-8">
-                  <h2 className="text-2xl font-semibold mb-4">Search Results</h2>
-                  <ResultsTable results={results} />
+                <div className="mt-12 space-y-4 max-w-[95%] mx-auto">
+                  <Card className="border shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-xl font-semibold flex items-center">
+                        Search Results
+                        {results.length > 0 && (
+                          <span className="ml-2 text-sm font-normal text-muted-foreground">
+                            ({results.length} niches found)
+                          </span>
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ResultsTable results={results} />
+                    </CardContent>
+                  </Card>
                 </div>
               )
             )}
