@@ -20,6 +20,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
 interface SearchFormProps {
   onSearch: (criteria: SearchCriteria) => void;
@@ -255,15 +256,17 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold bg-brand-gradient bg-clip-text text-transparent">
-          Rank & Rent Niche Finder
+    <Card className="w-full shadow-md">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-2xl font-bold flex items-center gap-2">
+          <Search className="h-5 w-5 text-brand-from" />
+          Niche Finder
         </CardTitle>
         <CardDescription>
           Find profitable niches for your rank & rent websites
         </CardDescription>
       </CardHeader>
+
       <CardContent className="space-y-6">
         {error && (
           <Alert variant="destructive">
@@ -278,307 +281,161 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="niche">Niche (Optional)</Label>
-                <div className="relative">
-                  <Popover open={openNichePopover} onOpenChange={setOpenNichePopover}>
-                    <PopoverTrigger asChild>
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">SEARCH PARAMETERS</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
+                <div className="space-y-2">
+                  <Label htmlFor="niche">Niche (Optional)</Label>
+                  <div className="relative">
+                    <Popover open={openNichePopover} onOpenChange={setOpenNichePopover}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openNichePopover}
+                          className="w-full justify-between"
+                          disabled={niches.length === 0}
+                        >
+                          {selectedNiche
+                            ? selectedNiche.name
+                            : niches.length === 0 
+                              ? "No niches available" 
+                              : "Select a niche (optional)"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput 
+                            placeholder="Search niches..." 
+                          />
+                          <CommandList className="max-h-[300px] overflow-y-auto">
+                            <CommandEmpty>No niche found.</CommandEmpty>
+                            <CommandGroup>
+                              {niches.map((niche) => (
+                                <CommandItem
+                                  key={niche.id}
+                                  value={niche.name}
+                                  onSelect={() => {
+                                    setSelectedNiche(niche);
+                                    setOpenNichePopover(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      selectedNiche?.id === niche.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {niche.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {selectedNiche && (
                       <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={openNichePopover}
-                        className="w-full justify-between"
-                        disabled={niches.length === 0}
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-8 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+                        onClick={clearNiche}
                       >
-                        {selectedNiche
-                          ? selectedNiche.name
-                          : niches.length === 0 
-                            ? "No niches available" 
-                            : "Select a niche (optional)"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Clear</span>
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
-                      <Command>
-                        <CommandInput 
-                          placeholder="Search niches..." 
-                        />
-                        <CommandList className="max-h-[300px] overflow-y-auto">
-                          <CommandEmpty>No niche found.</CommandEmpty>
-                          <CommandGroup>
-                            {niches.map((niche) => (
-                              <CommandItem
-                                key={niche.id}
-                                value={niche.name}
-                                onSelect={() => {
-                                  setSelectedNiche(niche);
-                                  setOpenNichePopover(false);
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    selectedNiche?.id === niche.id ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                {niche.name}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  {selectedNiche && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-8 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
-                      onClick={clearNiche}
-                    >
-                      <X className="h-4 w-4" />
-                      <span className="sr-only">Clear</span>
-                    </Button>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="city">City (Optional)</Label>
-                <div className="relative">
-                  <Popover open={openCityPopover} onOpenChange={setOpenCityPopover}>
-                    <PopoverTrigger asChild>
+                <div className="space-y-2">
+                  <Label htmlFor="city">City (Optional)</Label>
+                  <div className="relative">
+                    <Popover open={openCityPopover} onOpenChange={setOpenCityPopover}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openCityPopover}
+                          className="w-full justify-between"
+                          disabled={cities.length === 0}
+                        >
+                          {selectedCity
+                            ? `${selectedCity.name}${selectedCity.state ? `, ${selectedCity.state}` : ''} (${selectedCity.population.toLocaleString()})`
+                            : cities.length === 0 
+                              ? "No cities available" 
+                              : "Select a city (optional)"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput 
+                            placeholder="Search cities..." 
+                            value={citySearchValue}
+                            onValueChange={setCitySearchValue}
+                          />
+                          <CommandList className="max-h-[300px] overflow-y-auto">
+                            <CommandEmpty>No city found.</CommandEmpty>
+                            <CommandGroup>
+                              {filteredCities.map((city) => (
+                                <CommandItem
+                                  key={city.id}
+                                  value={city.name}
+                                  onSelect={() => {
+                                    setSelectedCity(city);
+                                    setOpenCityPopover(false);
+                                    setCitySearchValue("");
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      selectedCity?.id === city.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {city.name}{city.state ? `, ${city.state}` : ''} ({city.population.toLocaleString()})
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                          {citySearchValue.trim() === "" && cities.length > 100 && (
+                            <div className="py-2 px-2 text-xs text-center text-muted-foreground">
+                              Showing top 100 cities by population. Type to search for more.
+                            </div>
+                          )}
+                          {citySearchValue.trim() !== "" && filteredCities.length >= 100 && (
+                            <div className="py-2 px-2 text-xs text-center text-muted-foreground">
+                              Showing first 100 matches. Try a more specific search if needed.
+                            </div>
+                          )}
+                          {citySearchValue.trim() !== "" && filteredCities.length === 0 && (
+                            <div className="py-2 px-2 text-xs text-center text-muted-foreground">
+                              No cities found. Try a different search term.
+                            </div>
+                          )}
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {selectedCity && (
                       <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={openCityPopover}
-                        className="w-full justify-between"
-                        disabled={cities.length === 0}
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-8 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+                        onClick={clearCity}
                       >
-                        {selectedCity
-                          ? `${selectedCity.name}${selectedCity.state ? `, ${selectedCity.state}` : ''} (${selectedCity.population.toLocaleString()})`
-                          : cities.length === 0 
-                            ? "No cities available" 
-                            : "Select a city (optional)"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Clear</span>
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
-                      <Command>
-                        <CommandInput 
-                          placeholder="Search cities..." 
-                          value={citySearchValue}
-                          onValueChange={setCitySearchValue}
-                        />
-                        <CommandList className="max-h-[300px] overflow-y-auto">
-                          <CommandEmpty>No city found.</CommandEmpty>
-                          <CommandGroup>
-                            {filteredCities.map((city) => (
-                              <CommandItem
-                                key={city.id}
-                                value={city.name}
-                                onSelect={() => {
-                                  setSelectedCity(city);
-                                  setOpenCityPopover(false);
-                                  setCitySearchValue("");
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    selectedCity?.id === city.id ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                {city.name}{city.state ? `, ${city.state}` : ''} ({city.population.toLocaleString()})
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                        {citySearchValue.trim() === "" && cities.length > 100 && (
-                          <div className="py-2 px-2 text-xs text-center text-muted-foreground">
-                            Showing top 100 cities by population. Type to search for more.
-                          </div>
-                        )}
-                        {citySearchValue.trim() !== "" && filteredCities.length >= 100 && (
-                          <div className="py-2 px-2 text-xs text-center text-muted-foreground">
-                            Showing first 100 matches. Try a more specific search if needed.
-                          </div>
-                        )}
-                        {citySearchValue.trim() !== "" && filteredCities.length === 0 && (
-                          <div className="py-2 px-2 text-xs text-center text-muted-foreground">
-                            No cities found. Try a different search term.
-                          </div>
-                        )}
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  {selectedCity && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-8 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
-                      onClick={clearCity}
-                    >
-                      <X className="h-4 w-4" />
-                      <span className="sr-only">Clear</span>
-                    </Button>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label htmlFor="search-volume">Search Volume</Label>
-                </div>
-                <div className="grid grid-cols-5 gap-4 items-center">
-                  <div className="col-span-1">
-                    <Input
-                      type="text"
-                      value={searchVolumeMin}
-                      onChange={(e) => handleSearchVolumeInputChange(true, e.target.value)}
-                      onBlur={() => handleSearchVolumeInputBlur(true)}
-                      className="w-full"
-                      aria-label="Minimum search volume"
-                    />
-                  </div>
-                  <div className="col-span-3">
-                    <Slider
-                      id="search-volume"
-                      min={0}
-                      max={25000}
-                      step={1000}
-                      value={searchVolumeRange}
-                      onValueChange={setSearchVolumeRange}
-                      className="py-4"
-                    />
-                  </div>
-                  <div className="col-span-1">
-                    <Input
-                      type="text"
-                      value={searchVolumeMax}
-                      onChange={(e) => handleSearchVolumeInputChange(false, e.target.value)}
-                      onBlur={() => handleSearchVolumeInputBlur(false)}
-                      className="w-full"
-                      aria-label="Maximum search volume"
-                    />
-                  </div>
-                </div>
-                <div className="text-sm text-center text-muted-foreground">
-                  {parseInt(searchVolumeMin).toLocaleString()} - {parseInt(searchVolumeMax).toLocaleString()}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label htmlFor="cpc">Cost Per Click (CPC)</Label>
-                </div>
-                <div className="grid grid-cols-5 gap-4 items-center">
-                  <div className="col-span-1">
-                    <Input
-                      type="text"
-                      value={cpcMin}
-                      onChange={(e) => handleCpcInputChange(true, e.target.value)}
-                      onBlur={() => handleCpcInputBlur(true)}
-                      className="w-full"
-                      aria-label="Minimum CPC"
-                    />
-                  </div>
-                  <div className="col-span-3">
-                    <Slider
-                      id="cpc"
-                      min={0}
-                      max={1000}
-                      step={0.1}
-                      value={cpcRange}
-                      onValueChange={setCpcRange}
-                      className="py-4"
-                    />
-                  </div>
-                  <div className="col-span-1">
-                    <Input
-                      type="text"
-                      value={cpcMax}
-                      onChange={(e) => handleCpcInputChange(false, e.target.value)}
-                      onBlur={() => handleCpcInputBlur(false)}
-                      className="w-full"
-                      aria-label="Maximum CPC"
-                    />
-                  </div>
-                </div>
-                <div className="text-sm text-center text-muted-foreground">
-                  ${parseFloat(cpcMin).toFixed(2)} - ${parseFloat(cpcMax).toFixed(2)}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="population">Population</Label>
-                  <div className="flex items-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsPopulationEnabled(!isPopulationEnabled)}
-                      className="bg-brand-gradient text-white hover:opacity-90"
-                    >
-                      {isPopulationEnabled ? (
-                        <Check className="mr-2 h-4 w-4" />
-                      ) : (
-                        <Filter className="mr-2 h-4 w-4" />
-                      )}
-                      {isPopulationEnabled ? "Enabled" : "Add Population Filter"}
-                    </Button>
-                  </div>
-                </div>
-                
-                {isPopulationEnabled && (
-                  <>
-                    <div className="grid grid-cols-5 gap-4 items-center">
-                      <div className="col-span-1">
-                        <Input
-                          type="text"
-                          value={populationMin}
-                          onChange={(e) => handlePopulationInputChange(true, e.target.value)}
-                          onBlur={() => handlePopulationInputBlur(true)}
-                          className="w-full"
-                          aria-label="Minimum population"
-                        />
-                      </div>
-                      <div className="col-span-3">
-                        <Slider
-                          id="population"
-                          min={0}
-                          max={10000000}
-                          step={10000}
-                          value={populationRange}
-                          onValueChange={setPopulationRange}
-                          className="py-4"
-                        />
-                      </div>
-                      <div className="col-span-1">
-                        <Input
-                          type="text"
-                          value={populationMax}
-                          onChange={(e) => handlePopulationInputChange(false, e.target.value)}
-                          onBlur={() => handlePopulationInputBlur(false)}
-                          className="w-full"
-                          aria-label="Maximum population"
-                        />
-                      </div>
-                    </div>
-                    <div className="text-sm text-center text-muted-foreground">
-                      {parseInt(populationMin).toLocaleString()} - {parseInt(populationMax).toLocaleString()}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between">
+              
+              <div className="flex items-center justify-between pt-2 pb-4">
                 <div className="space-y-0.5">
                   <Label htmlFor="location-first">Location First</Label>
                   <div className="text-sm text-muted-foreground">
@@ -594,14 +451,171 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                 />
               </div>
             </div>
+            
+            <Separator />
+            
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">KEYWORD METRICS</h3>
+              
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label htmlFor="search-volume">Search Volume</Label>
+                  </div>
+                  <div className="grid grid-cols-5 gap-4 items-center">
+                    <div className="col-span-1">
+                      <Input
+                        type="text"
+                        value={searchVolumeMin}
+                        onChange={(e) => handleSearchVolumeInputChange(true, e.target.value)}
+                        onBlur={() => handleSearchVolumeInputBlur(true)}
+                        className="w-full"
+                        aria-label="Minimum search volume"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Slider
+                        id="search-volume"
+                        min={0}
+                        max={25000}
+                        step={1000}
+                        value={searchVolumeRange}
+                        onValueChange={setSearchVolumeRange}
+                        className="py-4"
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Input
+                        type="text"
+                        value={searchVolumeMax}
+                        onChange={(e) => handleSearchVolumeInputChange(false, e.target.value)}
+                        onBlur={() => handleSearchVolumeInputBlur(false)}
+                        className="w-full"
+                        aria-label="Maximum search volume"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-sm text-center text-muted-foreground">
+                    {parseInt(searchVolumeMin).toLocaleString()} - {parseInt(searchVolumeMax).toLocaleString()}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label htmlFor="cpc">Cost Per Click (CPC)</Label>
+                  </div>
+                  <div className="grid grid-cols-5 gap-4 items-center">
+                    <div className="col-span-1">
+                      <Input
+                        type="text"
+                        value={cpcMin}
+                        onChange={(e) => handleCpcInputChange(true, e.target.value)}
+                        onBlur={() => handleCpcInputBlur(true)}
+                        className="w-full"
+                        aria-label="Minimum CPC"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Slider
+                        id="cpc"
+                        min={0}
+                        max={1000}
+                        step={0.1}
+                        value={cpcRange}
+                        onValueChange={setCpcRange}
+                        className="py-4"
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Input
+                        type="text"
+                        value={cpcMax}
+                        onChange={(e) => handleCpcInputChange(false, e.target.value)}
+                        onBlur={() => handleCpcInputBlur(false)}
+                        className="w-full"
+                        aria-label="Maximum CPC"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-sm text-center text-muted-foreground">
+                    ${parseFloat(cpcMin).toFixed(2)} - ${parseFloat(cpcMax).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <Separator />
+            
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-muted-foreground">POPULATION FILTER</h3>
+                <Button
+                  type="button"
+                  variant={isPopulationEnabled ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setIsPopulationEnabled(!isPopulationEnabled)}
+                  className={isPopulationEnabled ? "" : "border-dashed"}
+                >
+                  {isPopulationEnabled ? (
+                    <Check className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Filter className="mr-2 h-4 w-4" />
+                  )}
+                  {isPopulationEnabled ? "Filter Active" : "Add Filter"}
+                </Button>
+              </div>
+              
+              {isPopulationEnabled && (
+                <div className="space-y-2 pt-2 pb-1">
+                  <div className="grid grid-cols-5 gap-4 items-center">
+                    <div className="col-span-1">
+                      <Input
+                        type="text"
+                        value={populationMin}
+                        onChange={(e) => handlePopulationInputChange(true, e.target.value)}
+                        onBlur={() => handlePopulationInputBlur(true)}
+                        className="w-full"
+                        aria-label="Minimum population"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Slider
+                        id="population"
+                        min={0}
+                        max={10000000}
+                        step={10000}
+                        value={populationRange}
+                        onValueChange={setPopulationRange}
+                        className="py-4"
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Input
+                        type="text"
+                        value={populationMax}
+                        onChange={(e) => handlePopulationInputChange(false, e.target.value)}
+                        onBlur={() => handlePopulationInputBlur(false)}
+                        className="w-full"
+                        aria-label="Maximum population"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-sm text-center text-muted-foreground">
+                    {parseInt(populationMin).toLocaleString()} - {parseInt(populationMax).toLocaleString()}
+                  </div>
+                </div>
+              )}
+            </div>
           </>
         )}
       </CardContent>
-      <CardFooter>
+      
+      <CardFooter className="pt-2">
         <Button 
           onClick={handleSubmit} 
           disabled={isLoading || isLoading1 || (cities.length === 0 && niches.length === 0)}
-          className="w-full bg-brand-gradient hover:opacity-90 transition-opacity"
+          className="w-full"
+          size="lg"
         >
           {isLoading ? (
             <>Searching...</>

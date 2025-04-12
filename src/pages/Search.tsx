@@ -66,16 +66,16 @@ const Search = () => {
     <div className="min-h-screen bg-gray-50">
       <Container>
         <div className="py-8">
-          <div className="grid grid-cols-1 gap-8">
-            <div>
-              <h1 className="text-3xl font-bold mb-4">Keyword Search</h1>
-              <p className="text-muted-foreground mb-6">
+          <div className="space-y-8">
+            <div className="text-center max-w-3xl mx-auto">
+              <h1 className="text-3xl font-bold mb-2 bg-brand-gradient bg-clip-text text-transparent">Keyword Search</h1>
+              <p className="text-muted-foreground">
                 Find profitable rank and rent niches by searching for keywords with high search volume and CPC.
               </p>
             </div>
             
             {apiError && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="mx-auto max-w-4xl">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   <strong>Error:</strong> {apiError}
@@ -83,12 +83,19 @@ const Search = () => {
               </Alert>
             )}
             
-            <SearchForm onSearch={handleSearch} isLoading={isLoading} />
+            <div className="mx-auto max-w-4xl">
+              <SearchForm onSearch={handleSearch} isLoading={isLoading} />
+            </div>
             
             {isLoading ? (
               <LoadingState />
             ) : (
-              hasSearched && <ResultsTable results={results} />
+              hasSearched && (
+                <div className="mt-8">
+                  <h2 className="text-2xl font-semibold mb-4">Search Results</h2>
+                  <ResultsTable results={results} />
+                </div>
+              )
             )}
           </div>
         </div>
