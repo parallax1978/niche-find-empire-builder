@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Card, 
@@ -516,16 +515,26 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="population">Population</Label>
-                  <Button
-                    type="button"
-                    variant={isPopulationEnabled ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setIsPopulationEnabled(!isPopulationEnabled)}
-                    className={isPopulationEnabled ? "bg-brand-gradient" : ""}
-                  >
-                    <Filter className="h-4 w-4 mr-2" />
-                    {isPopulationEnabled ? "Enabled" : "Disabled"}
-                  </Button>
+                  <div className="flex items-center">
+                    <Button
+                      type="button"
+                      variant={isPopulationEnabled ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setIsPopulationEnabled(!isPopulationEnabled)}
+                      className={`flex items-center gap-2 ${
+                        isPopulationEnabled 
+                          ? "bg-brand-gradient text-white hover:opacity-90" 
+                          : "bg-transparent text-muted-foreground hover:bg-accent"
+                      }`}
+                    >
+                      {isPopulationEnabled ? (
+                        <Check className="mr-2 h-4 w-4" />
+                      ) : (
+                        <Filter className="mr-2 h-4 w-4" />
+                      )}
+                      {isPopulationEnabled ? "Enabled" : "Disabled"}
+                    </Button>
+                  </div>
                 </div>
                 
                 {isPopulationEnabled && (
