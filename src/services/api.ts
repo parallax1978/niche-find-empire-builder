@@ -68,9 +68,21 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
       body: { keyword }
     });
 
-    if (error || !data) {
-      console.error(`Error fetching keyword data: ${error?.message || 'No data received'}`);
-      throw new Error(error?.message || 'Failed to fetch keyword data');
+    console.log('Edge function response:', data);
+
+    if (error) {
+      console.error(`Error fetching keyword data (${error.status}): ${error.message}`);
+      throw new Error(`Failed to fetch keyword data: ${error.message}`);
+    }
+
+    if (!data) {
+      console.error('No data received from edge function');
+      throw new Error('No data received from edge function');
+    }
+
+    if (data.errorMessage) {
+      console.error(`Error from edge function: ${data.errorMessage}`);
+      throw new Error(`Failed to fetch keyword data: ${data.errorMessage}`);
     }
 
     // Add delay between requests to avoid rate limiting
