@@ -69,6 +69,11 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Add explicit purple colors that don't rely on CSS variables
+				purple: {
+					100: '#E5DEFF',
+					500: '#8B5CF6',
 				}
 			},
 			borderRadius: {
