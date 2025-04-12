@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   Card, 
@@ -34,12 +35,13 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   const [selectedCity, setSelectedCity] = useState<City | undefined>(undefined);
   const [searchVolumeRange, setSearchVolumeRange] = useState([0, 1000000]);
   const [cpcRange, setCpcRange] = useState([0, 1000]);
+  const [populationRange, setPopulationRange] = useState([0, 10000000]);
   const [searchVolumeMin, setSearchVolumeMin] = useState<string>("0");
   const [searchVolumeMax, setSearchVolumeMax] = useState<string>("1000000");
   const [cpcMin, setCpcMin] = useState<string>("0");
   const [cpcMax, setCpcMax] = useState<string>("1000");
-  const [populationMin, setPopulationMin] = useState<string>("");
-  const [populationMax, setPopulationMax] = useState<string>("");
+  const [populationMin, setPopulationMin] = useState<string>("0");
+  const [populationMax, setPopulationMax] = useState<string>("10000000");
   const [isPopulationEnabled, setIsPopulationEnabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading1, setIsLoading1] = useState(true);
@@ -114,6 +116,11 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
     setCpcMax(cpcRange[1].toString());
   }, [cpcRange]);
 
+  useEffect(() => {
+    setPopulationMin(populationRange[0].toString());
+    setPopulationMax(populationRange[1].toString());
+  }, [populationRange]);
+
   const handleSearchVolumeInputChange = (isMin: boolean, value: string) => {
     if (value !== "" && !/^\d+$/.test(value)) return;
     
@@ -152,6 +159,25 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
     }
   };
 
+  const handlePopulationInputChange = (isMin: boolean, value: string) => {
+    if (value !== "" && !/^\d+$/.test(value)) return;
+    
+    let numValue = value === "" ? 0 : parseInt(value, 10);
+    numValue = Math.min(Math.max(numValue, 0), 10000000);
+    
+    if (isMin) {
+      setPopulationMin(value);
+      if (value !== "" && numValue <= populationRange[1]) {
+        setPopulationRange([numValue, populationRange[1]]);
+      }
+    } else {
+      setPopulationMax(value);
+      if (value !== "" && numValue >= populationRange[0]) {
+        setPopulationRange([populationRange[0], numValue]);
+      }
+    }
+  };
+
   const handleSearchVolumeInputBlur = (isMin: boolean) => {
     if (isMin) {
       const numValue = searchVolumeMin === "" ? 0 : parseInt(searchVolumeMin, 10);
@@ -176,6 +202,18 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
     }
   };
 
+  const handlePopulationInputBlur = (isMin: boolean) => {
+    if (isMin) {
+      const numValue = populationMin === "" ? 0 : parseInt(populationMin, 10);
+      setPopulationMin(numValue.toString());
+      setPopulationRange([numValue, populationRange[1]]);
+    } else {
+      const numValue = populationMax === "" ? 10000000 : parseInt(populationMax, 10);
+      setPopulationMax(numValue.toString());
+      setPopulationRange([populationRange[0], numValue]);
+    }
+  };
+
   const handleSubmit = () => {
     const criteria: SearchCriteria = {
       niche: selectedNiche,
@@ -191,11 +229,12 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
     };
 
     if (isPopulationEnabled) {
-      const min = populationMin ? parseInt(populationMin, 10) : 0;
-      const max = populationMax ? parseInt(populationMax, 10) : Number.MAX_SAFE_INTEGER;
-      criteria.population = { min, max };
+      criteria.population = { 
+        min: populationRange[0],
+        max: populationRange[1]
+      };
       
-      console.log(`Population filter enabled: ${min}-${max}`);
+      console.log(`Population filter enabled: ${populationRange[0]}-${populationRange[1]}`);
     } else {
       console.log("Population filter disabled");
     }
@@ -475,7 +514,8 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="population">Population</Label>
                   <Button
                     type="button"
                     variant={isPopulationEnabled ? "default" : "outline"}
@@ -484,33 +524,49 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                     className={isPopulationEnabled ? "bg-brand-gradient" : ""}
                   >
                     <Filter className="h-4 w-4 mr-2" />
-                    {isPopulationEnabled ? "Population Filter Enabled" : "Add Population Filter"}
+                    {isPopulationEnabled ? "Enabled" : "Disabled"}
                   </Button>
                 </div>
                 
                 {isPopulationEnabled && (
-                  <div className="grid grid-cols-2 gap-4 mt-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="population-min">Min Population</Label>
-                      <Input
-                        id="population-min"
-                        type="number"
-                        placeholder="Min population"
-                        value={populationMin}
-                        onChange={(e) => setPopulationMin(e.target.value)}
-                      />
+                  <>
+                    <div className="grid grid-cols-5 gap-4 items-center">
+                      <div className="col-span-1">
+                        <Input
+                          type="text"
+                          value={populationMin}
+                          onChange={(e) => handlePopulationInputChange(true, e.target.value)}
+                          onBlur={() => handlePopulationInputBlur(true)}
+                          className="w-full"
+                          aria-label="Minimum population"
+                        />
+                      </div>
+                      <div className="col-span-3">
+                        <Slider
+                          id="population"
+                          min={0}
+                          max={10000000}
+                          step={10000}
+                          value={populationRange}
+                          onValueChange={setPopulationRange}
+                          className="py-4"
+                        />
+                      </div>
+                      <div className="col-span-1">
+                        <Input
+                          type="text"
+                          value={populationMax}
+                          onChange={(e) => handlePopulationInputChange(false, e.target.value)}
+                          onBlur={() => handlePopulationInputBlur(false)}
+                          className="w-full"
+                          aria-label="Maximum population"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="population-max">Max Population</Label>
-                      <Input
-                        id="population-max"
-                        type="number"
-                        placeholder="Max population"
-                        value={populationMax}
-                        onChange={(e) => setPopulationMax(e.target.value)}
-                      />
+                    <div className="text-sm text-center text-muted-foreground">
+                      {parseInt(populationMin).toLocaleString()} - {parseInt(populationMax).toLocaleString()}
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
             </div>
