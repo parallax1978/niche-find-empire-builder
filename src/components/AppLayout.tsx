@@ -23,9 +23,12 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold bg-brand-gradient bg-clip-text text-transparent mr-8">
+              <Link 
+                to="/" 
+                className="text-xl font-bold bg-brand-gradient bg-clip-text text-transparent mr-8 hover:opacity-80 transition-opacity"
+              >
                 Rank & Rent Finder
-              </h1>
+              </Link>
             </div>
             
             <nav className="hidden md:flex space-x-4 ml-auto">
