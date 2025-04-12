@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { City, Niche, SearchCriteria, KeywordResult } from "@/types";
 
@@ -151,7 +152,13 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
       selectedNiches = [criteria.niche];
     } else {
       // Take more niches to increase chance of finding valid results
-      selectedNiches = niches.slice(0, 5);
+      selectedNiches = niches.slice(0, 20);
+    }
+    
+    // For a specific city, we need to try more niches to reach the desired result count
+    if (criteria.city && !criteria.niche) {
+      // If we're filtering by city but not by niche, use more niches to get enough results
+      selectedNiches = niches.slice(0, Math.min(50, niches.length));
     }
 
     // Process combinations until we have the desired number of results
