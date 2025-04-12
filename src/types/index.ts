@@ -35,7 +35,17 @@ export interface KeywordResult {
   searchVolume: number;
   cpc: number;
   population: number | null;
-  domainAvailable: boolean;
-  domainLink: string | null;
+  domainAvailable: boolean; // Keeping for backward compatibility
+  domainLink: string | null; // Keeping for backward compatibility
   exactMatchDomain: string;
+  domainStatus: {
+    com: boolean;
+    net: boolean;
+    org: boolean;
+  };
+  domainLinks: {
+    com: string | null;
+    net: string | null;
+    org: string | null;
+  };
 }

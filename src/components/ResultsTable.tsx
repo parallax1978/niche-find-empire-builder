@@ -20,7 +20,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { KeywordResult } from "@/types";
 import { Check, Globe, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 interface ResultsTableProps {
   results: KeywordResult[];
@@ -74,6 +73,70 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
     return `$${cpc.toFixed(2)}`;
   };
   
+  // For our mock data, generate domain status if it doesn't exist yet
+  const ensureDomainStatus = (result: KeywordResult) => {
+    // If the domainStatus doesn't exist, create it based on domainAvailable
+    if (!result.domainStatus) {
+      result.domainStatus = {
+        com: result.domainAvailable,
+        net: Math.random() > 0.4, // Random availability for net
+        org: Math.random() > 0.5, // Random availability for org
+      };
+    }
+    
+    // If domainLinks doesn't exist, create it based on domainLink
+    if (!result.domainLinks) {
+      result.domainLinks = {
+        com: result.domainAvailable ? result.domainLink : null,
+        net: Math.random() > 0.4 ? `https://www.namecheap.com/domains/registration/results/?domain=${result.exactMatchDomain}.net` : null,
+        org: Math.random() > 0.5 ? `https://www.namecheap.com/domains/registration/results/?domain=${result.exactMatchDomain}.org` : null,
+      };
+    }
+    
+    return result;
+  };
+  
+  // Render domain status check or X with extension
+  const renderDomainStatus = (available: boolean, extension: string) => {
+    if (available) {
+      return (
+        <div className="flex items-center gap-1">
+          <Check className="h-4 w-4 text-green-600" />
+          <span className="text-green-600 font-medium">{extension}</span>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex items-center gap-1">
+          <X className="h-4 w-4 text-red-600" />
+          <span className="text-red-600 font-medium">{extension}</span>
+        </div>
+      );
+    }
+  };
+  
+  // Render registration button for a specific extension
+  const renderDomainAction = (result: KeywordResult, extension: keyof typeof result.domainStatus) => {
+    const available = result.domainStatus[extension];
+    const link = result.domainLinks[extension];
+    
+    if (available && link) {
+      return (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => window.open(link, "_blank")}
+          className="border-brand-from text-brand-from hover:bg-brand-gradient hover:text-white transition-all"
+        >
+          <Globe className="mr-1 h-3 w-3" />
+          {extension}
+        </Button>
+      );
+    } else {
+      return null;
+    }
+  };
+  
   if (results.length === 0) {
     return (
       <div className="mt-8 text-center">
@@ -102,47 +165,34 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentResults.map((result) => (
-              <TableRow key={result.id}>
-                <TableCell className="font-medium">{result.keyword}</TableCell>
-                <TableCell className="font-mono text-sm">{result.exactMatchDomain}</TableCell>
-                <TableCell className="text-right">{formatNumber(result.searchVolume)}</TableCell>
-                <TableCell className="text-right">{formatCpc(result.cpc)}</TableCell>
-                {result.population !== null && (
-                  <TableCell className="text-right">{formatNumber(result.population)}</TableCell>
-                )}
-                <TableCell>
-                  {result.domainAvailable ? (
-                    <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
-                      <Check className="mr-1 h-3 w-3" />
-                      Available
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="bg-red-100 text-red-800 hover:bg-red-200">
-                      <X className="mr-1 h-3 w-3" />
-                      Taken
-                    </Badge>
+            {currentResults.map((result) => {
+              const resultWithStatus = ensureDomainStatus(result);
+              return (
+                <TableRow key={result.id}>
+                  <TableCell className="font-medium">{result.keyword}</TableCell>
+                  <TableCell className="font-mono text-sm">{result.exactMatchDomain}</TableCell>
+                  <TableCell className="text-right">{formatNumber(result.searchVolume)}</TableCell>
+                  <TableCell className="text-right">{formatCpc(result.cpc)}</TableCell>
+                  {result.population !== null && (
+                    <TableCell className="text-right">{formatNumber(result.population)}</TableCell>
                   )}
-                </TableCell>
-                <TableCell>
-                  {result.domainAvailable && result.domainLink ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(result.domainLink!, "_blank")}
-                      className="border-brand-from text-brand-from hover:bg-brand-gradient hover:text-white transition-all"
-                    >
-                      <Globe className="mr-1 h-3 w-3" />
-                      Register
-                    </Button>
-                  ) : (
-                    <Button variant="outline" size="sm" disabled>
-                      Unavailable
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      {renderDomainStatus(resultWithStatus.domainStatus.com, ".com")}
+                      {renderDomainStatus(resultWithStatus.domainStatus.net, ".net")}
+                      {renderDomainStatus(resultWithStatus.domainStatus.org, ".org")}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      {renderDomainAction(resultWithStatus, "com")}
+                      {renderDomainAction(resultWithStatus, "net")}
+                      {renderDomainAction(resultWithStatus, "org")}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
