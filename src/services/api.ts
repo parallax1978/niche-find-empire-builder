@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { City, Niche, SearchCriteria, KeywordResult } from "@/types";
 
@@ -134,17 +133,33 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
 
     const results: KeywordResult[] = [];
 
-    // Limit to 10 cities and 10 niches for better performance
+    // Set the maximum results to return
     const maxResults = 10;
-    const selectedCities = criteria.city ? [criteria.city] : filteredCities.slice(0, 5);
-    const selectedNiches = criteria.niche ? [criteria.niche] : niches.slice(0, 2);
+    
+    // If we have a specific city or niche selected, use those
+    // Otherwise, adjust our sampling strategy to get more diverse results
+    let selectedCities, selectedNiches;
+    
+    if (criteria.city) {
+      selectedCities = [criteria.city];
+    } else {
+      // Take more cities to increase chance of finding valid results
+      selectedCities = filteredCities.slice(0, 20);
+    }
+    
+    if (criteria.niche) {
+      selectedNiches = [criteria.niche];
+    } else {
+      // Take more niches to increase chance of finding valid results
+      selectedNiches = niches.slice(0, 5);
+    }
 
-    // Process combinations
-    for (const niche of selectedNiches) {
-      for (const city of selectedCities) {
+    // Process combinations until we have the desired number of results
+    cityLoop: for (const city of selectedCities) {
+      for (const niche of selectedNiches) {
         // Stop if we've reached the maximum results
         if (results.length >= maxResults) {
-          break;
+          break cityLoop;
         }
         
         // Generate the full keyword for searching
