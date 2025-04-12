@@ -169,11 +169,15 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
           break cityLoop;
         }
         
-        // Generate the full keyword for searching
-        const fullKeyword = `${niche.name.toLowerCase()} ${city.name}`;
+        // Generate the full keyword for searching based on locationFirst flag
+        const fullKeyword = criteria.locationFirst 
+          ? `${city.name.toLowerCase()} ${niche.name.toLowerCase()}` 
+          : `${niche.name.toLowerCase()} ${city.name.toLowerCase()}`;
 
-        // Create exactMatchDomain
-        const exactMatchDomain = `${niche.name.toLowerCase().replace(/\s+/g, '')}${city.name.toLowerCase().replace(/\s+/g, '')}.com`;
+        // Create exactMatchDomain based on locationFirst flag
+        const exactMatchDomain = criteria.locationFirst
+          ? `${city.name.toLowerCase().replace(/\s+/g, '')}${niche.name.toLowerCase().replace(/\s+/g, '')}.com`
+          : `${niche.name.toLowerCase().replace(/\s+/g, '')}${city.name.toLowerCase().replace(/\s+/g, '')}.com`;
 
         try {
           // Get real data for this keyword

@@ -26,6 +26,7 @@ export interface SearchCriteria {
     min: number;
     max: number;
   };
+  locationFirst?: boolean; // New property to control keyword/domain order
 }
 
 export interface KeywordResult {
@@ -36,5 +37,5 @@ export interface KeywordResult {
   population: number | null;
   domainAvailable: boolean;
   domainLink: string | null;
-  exactMatchDomain: string; // Added EMD
+  exactMatchDomain: string;
 }

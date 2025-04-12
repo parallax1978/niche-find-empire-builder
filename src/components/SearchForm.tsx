@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Card, 
@@ -12,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { Niche, City, SearchCriteria } from "@/types";
 import { fetchCities, fetchNiches } from "@/services/api";
 import { Search, Filter, X, AlertTriangle, Check, ChevronsUpDown } from "lucide-react";
@@ -43,6 +43,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   const [populationMin, setPopulationMin] = useState<string>("0");
   const [populationMax, setPopulationMax] = useState<string>("10000000");
   const [isPopulationEnabled, setIsPopulationEnabled] = useState(false);
+  const [locationFirst, setLocationFirst] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading1, setIsLoading1] = useState(true);
   const [openNichePopover, setOpenNichePopover] = useState(false);
@@ -226,6 +227,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
         min: cpcRange[0],
         max: cpcRange[1],
       },
+      locationFirst: locationFirst,
     };
 
     if (isPopulationEnabled) {
@@ -574,6 +576,22 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                     </div>
                   </>
                 )}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="location-first">Location First</Label>
+                  <div className="text-sm text-muted-foreground">
+                    {locationFirst 
+                      ? 'Tampa 3D Rendering (tampa3drendering.com)' 
+                      : '3D Rendering Tampa (3drenderingtampa.com)'}
+                  </div>
+                </div>
+                <Switch
+                  id="location-first"
+                  checked={locationFirst}
+                  onCheckedChange={setLocationFirst}
+                />
               </div>
             </div>
           </>
