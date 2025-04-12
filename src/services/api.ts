@@ -133,19 +133,13 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
 
     const results: KeywordResult[] = [];
 
-    // Limit combinations to avoid overloading
-    const maxCombinations = criteria.city || criteria.niche ? 10 : 3;
-    const selectedCities = criteria.city ? [criteria.city] : filteredCities.slice(0, maxCombinations);
-    const selectedNiches = criteria.niche ? [criteria.niche] : niches.slice(0, maxCombinations);
+    // Use all available combinations
+    const selectedCities = criteria.city ? [criteria.city] : filteredCities;
+    const selectedNiches = criteria.niche ? [criteria.niche] : niches;
 
     // Process combinations
     for (const niche of selectedNiches) {
       for (const city of selectedCities) {
-        // Skip if we've reached the limit
-        if (results.length >= maxCombinations && !criteria.city && !criteria.niche) {
-          break;
-        }
-
         // Generate the full keyword for searching
         const fullKeyword = `${niche.name.toLowerCase()} ${city.name}`;
 
