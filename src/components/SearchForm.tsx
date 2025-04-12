@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { 
   Card, 
   CardContent, 
@@ -32,15 +32,11 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   const [citySearchValue, setCitySearchValue] = useState("");
   const [selectedNiche, setSelectedNiche] = useState<Niche | undefined>(undefined);
   const [selectedCity, setSelectedCity] = useState<City | undefined>(undefined);
-  const [searchVolumeRange, setSearchVolumeRange] = useState([0, 1000000]);
+  const [searchVolumeRange, setSearchVolumeRange] = useState([0, 25000]);
+  const [searchVolumeMin, setSearchVolumeMin] = useState<string>("0");
+  const [searchVolumeMax, setSearchVolumeMax] = useState<string>("25000");
   const [cpcRange, setCpcRange] = useState([0, 1000]);
   const [populationRange, setPopulationRange] = useState([0, 10000000]);
-  const [searchVolumeMin, setSearchVolumeMin] = useState<string>("0");
-  const [searchVolumeMax, setSearchVolumeMax] = useState<string>("1000000");
-  const [cpcMin, setCpcMin] = useState<string>("0");
-  const [cpcMax, setCpcMax] = useState<string>("1000");
-  const [populationMin, setPopulationMin] = useState<string>("0");
-  const [populationMax, setPopulationMax] = useState<string>("10000000");
   const [isPopulationEnabled, setIsPopulationEnabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading1, setIsLoading1] = useState(true);
@@ -447,7 +443,7 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
                     <Slider
                       id="search-volume"
                       min={0}
-                      max={1000000}
+                      max={25000}
                       step={1000}
                       value={searchVolumeRange}
                       onValueChange={setSearchVolumeRange}
