@@ -7,9 +7,10 @@ import LoadingState from "@/components/LoadingState";
 import { SearchCriteria, KeywordResult } from "@/types";
 import { searchNiches } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Search = () => {
   const [results, setResults] = useState<KeywordResult[]>([]);
@@ -64,57 +65,76 @@ const Search = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
-      <Container>
-        <div className="py-8">
-          <div className="space-y-8">
-            <div className="text-center max-w-3xl mx-auto">
-              <h1 className="text-3xl font-bold mb-2 bg-brand-gradient bg-clip-text text-transparent">Keyword Search</h1>
-              <p className="text-muted-foreground">
-                Find profitable rank and rent niches by searching for keywords with high search volume and CPC.
-              </p>
-            </div>
-            
-            {apiError && (
-              <Alert variant="destructive" className="mx-auto max-w-4xl">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Error:</strong> {apiError}
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="mx-auto max-w-4xl">
-              <SearchForm onSearch={handleSearch} isLoading={isLoading} />
-            </div>
-            
-            {isLoading ? (
-              <LoadingState />
-            ) : (
-              hasSearched && (
-                <div className="mt-12 space-y-4 max-w-[95%] mx-auto">
-                  <Card className="border shadow-sm">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-xl font-semibold flex items-center">
-                        Search Results
-                        {results.length > 0 && (
-                          <span className="ml-2 text-sm font-normal text-muted-foreground">
-                            ({results.length} niches found)
-                          </span>
-                        )}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ResultsTable results={results} />
-                    </CardContent>
-                  </Card>
+    <TooltipProvider delayDuration={300}>
+      <div className="min-h-screen bg-gray-50 pb-12">
+        <Container>
+          <div className="py-8">
+            <div className="space-y-8">
+              <div className="text-center max-w-3xl mx-auto">
+                <h1 className="text-3xl font-bold mb-2 bg-brand-gradient bg-clip-text text-transparent">Keyword Search</h1>
+                <div className="flex items-center justify-center gap-2">
+                  <p className="text-muted-foreground">
+                    Find profitable rank and rent niches by searching for keywords with high search volume and CPC.
+                  </p>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Search for keyword opportunities based on search volume and CPC values</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-              )
-            )}
+              </div>
+              
+              {apiError && (
+                <Alert variant="destructive" className="mx-auto max-w-4xl">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Error:</strong> {apiError}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              <div className="mx-auto max-w-4xl">
+                <SearchForm onSearch={handleSearch} isLoading={isLoading} />
+              </div>
+              
+              {isLoading ? (
+                <LoadingState />
+              ) : (
+                hasSearched && (
+                  <div className="mt-12 space-y-4 max-w-[95%] mx-auto">
+                    <Card className="border shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl font-semibold flex items-center">
+                          Search Results
+                          {results.length > 0 && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                                  ({results.length} niches found)
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Total number of matching keyword opportunities</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ResultsTable results={results} />
+                      </CardContent>
+                    </Card>
+                  </div>
+                )
+              )}
+            </div>
           </div>
-        </div>
-      </Container>
-    </div>
+        </Container>
+      </div>
+    </TooltipProvider>
   );
 };
 
