@@ -193,16 +193,35 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
 
           // Simple domain availability check (just for demo)
           const domainAvailable = Math.random() > 0.7; // 30% chance available
-
+          
+          // Generate random availability for .net and .org domains
+          const netAvailable = Math.random() > 0.4; // 60% chance available
+          const orgAvailable = Math.random() > 0.5; // 50% chance available
+          
+          // Create domain links for each extension if available
+          const baseNamecheapLink = `https://www.namecheap.com/domains/registration/results/?domain=${exactMatchDomain.replace('.com', '')}`;
+          
           results.push({
             id: crypto.randomUUID(),
             keyword: fullKeyword,
             searchVolume,
             cpc,
             population: city.population,
-            domainAvailable,
-            domainLink: domainAvailable ? `https://domains.google.com/registrar/search?searchTerm=${exactMatchDomain}` : null,
-            exactMatchDomain
+            domainAvailable, // Keep for backward compatibility
+            domainLink: domainAvailable ? `https://domains.google.com/registrar/search?searchTerm=${exactMatchDomain}` : null, // Keep for backward compatibility
+            exactMatchDomain,
+            // Add the new domain status properties
+            domainStatus: {
+              com: domainAvailable,
+              net: netAvailable,
+              org: orgAvailable
+            },
+            // Add the new domain links properties
+            domainLinks: {
+              com: domainAvailable ? `${baseNamecheapLink}.com` : null,
+              net: netAvailable ? `${baseNamecheapLink}.net` : null,
+              org: orgAvailable ? `${baseNamecheapLink}.org` : null
+            }
           });
         } catch (error) {
           console.error(`Error processing ${fullKeyword}:`, error);
