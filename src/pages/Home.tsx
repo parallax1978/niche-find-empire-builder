@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
@@ -23,12 +22,6 @@ const Home = () => {
                   <Link to="/search">
                     <Search className="mr-2 h-5 w-5" />
                     Start Searching
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-                  <Link to="/admin">
-                    <Settings className="mr-2 h-5 w-5" />
-                    Admin Panel
                   </Link>
                 </Button>
               </div>
