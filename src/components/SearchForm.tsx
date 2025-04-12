@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Card, 
@@ -35,6 +34,10 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
   const [selectedCity, setSelectedCity] = useState<City | undefined>(undefined);
   const [searchVolumeRange, setSearchVolumeRange] = useState([0, 1000000]);
   const [cpcRange, setCpcRange] = useState([0, 1000]);
+  const [searchVolumeMin, setSearchVolumeMin] = useState<string>("0");
+  const [searchVolumeMax, setSearchVolumeMax] = useState<string>("1000000");
+  const [cpcMin, setCpcMin] = useState<string>("0");
+  const [cpcMax, setCpcMax] = useState<string>("1000");
   const [populationMin, setPopulationMin] = useState<string>("");
   const [populationMax, setPopulationMax] = useState<string>("");
   const [isPopulationEnabled, setIsPopulationEnabled] = useState(false);
@@ -73,7 +76,6 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
         
         setNiches(nichesData);
         setCities(citiesData);
-        // Initial display - show top cities by population
         setFilteredCities(citiesData.slice(0, 100));
         
         console.log(`Loaded ${citiesData.length} cities and ${nichesData.length} niches`);
@@ -88,36 +90,93 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
     loadData();
   }, [toast]);
 
-  // This effect handles city filtering based on user search
   useEffect(() => {
     if (citySearchValue.trim() === "") {
-      // No search term - show top 100 cities by population
       setFilteredCities(cities.slice(0, 100));
     } else {
       const searchTerm = citySearchValue.toLowerCase().trim();
       
-      // Directly log the full cities array to debug
-      console.log("All cities length:", cities.length);
-      
-      // Search ALL cities without any pre-filtering
       const matches = cities.filter(city => 
         city.name.toLowerCase().includes(searchTerm)
       );
       
-      console.log(`Search for "${searchTerm}" found ${matches.length} total matches`);
-      // Log the first and last few matches to debug
-      if (matches.length > 0) {
-        console.log("First 3 matches:", matches.slice(0, 3));
-        console.log("Last 3 matches:", matches.slice(-3));
-      }
-      
-      // Display up to 100 matches
       setFilteredCities(matches.slice(0, 100));
     }
   }, [citySearchValue, cities]);
 
+  useEffect(() => {
+    setSearchVolumeMin(searchVolumeRange[0].toString());
+    setSearchVolumeMax(searchVolumeRange[1].toString());
+  }, [searchVolumeRange]);
+
+  useEffect(() => {
+    setCpcMin(cpcRange[0].toString());
+    setCpcMax(cpcRange[1].toString());
+  }, [cpcRange]);
+
+  const handleSearchVolumeInputChange = (isMin: boolean, value: string) => {
+    if (value !== "" && !/^\d+$/.test(value)) return;
+    
+    let numValue = value === "" ? 0 : parseInt(value, 10);
+    numValue = Math.min(Math.max(numValue, 0), 1000000);
+    
+    if (isMin) {
+      setSearchVolumeMin(value);
+      if (value !== "" && numValue <= searchVolumeRange[1]) {
+        setSearchVolumeRange([numValue, searchVolumeRange[1]]);
+      }
+    } else {
+      setSearchVolumeMax(value);
+      if (value !== "" && numValue >= searchVolumeRange[0]) {
+        setSearchVolumeRange([searchVolumeRange[0], numValue]);
+      }
+    }
+  };
+
+  const handleCpcInputChange = (isMin: boolean, value: string) => {
+    if (value !== "" && !/^\d*\.?\d*$/.test(value)) return;
+    
+    let numValue = value === "" ? 0 : parseFloat(value);
+    numValue = Math.min(Math.max(numValue, 0), 1000);
+    
+    if (isMin) {
+      setCpcMin(value);
+      if (value !== "" && numValue <= cpcRange[1]) {
+        setCpcRange([numValue, cpcRange[1]]);
+      }
+    } else {
+      setCpcMax(value);
+      if (value !== "" && numValue >= cpcRange[0]) {
+        setCpcRange([cpcRange[0], numValue]);
+      }
+    }
+  };
+
+  const handleSearchVolumeInputBlur = (isMin: boolean) => {
+    if (isMin) {
+      const numValue = searchVolumeMin === "" ? 0 : parseInt(searchVolumeMin, 10);
+      setSearchVolumeMin(numValue.toString());
+      setSearchVolumeRange([numValue, searchVolumeRange[1]]);
+    } else {
+      const numValue = searchVolumeMax === "" ? 1000000 : parseInt(searchVolumeMax, 10);
+      setSearchVolumeMax(numValue.toString());
+      setSearchVolumeRange([searchVolumeRange[0], numValue]);
+    }
+  };
+
+  const handleCpcInputBlur = (isMin: boolean) => {
+    if (isMin) {
+      const numValue = cpcMin === "" ? 0 : parseFloat(cpcMin);
+      setCpcMin(numValue.toFixed(2));
+      setCpcRange([numValue, cpcRange[1]]);
+    } else {
+      const numValue = cpcMax === "" ? 1000 : parseFloat(cpcMax);
+      setCpcMax(numValue.toFixed(2));
+      setCpcRange([cpcRange[0], numValue]);
+    }
+  };
+
   const handleSubmit = () => {
-    // Create search criteria object with properly initialized population values
     const criteria: SearchCriteria = {
       niche: selectedNiche,
       city: selectedCity,
@@ -131,7 +190,6 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
       },
     };
 
-    // Only add population criteria if it's enabled
     if (isPopulationEnabled) {
       const min = populationMin ? parseInt(populationMin, 10) : 0;
       const max = populationMax ? parseInt(populationMax, 10) : Number.MAX_SAFE_INTEGER;
@@ -142,7 +200,6 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
       console.log("Population filter disabled");
     }
 
-    // Log the final search criteria for debugging
     console.log("Final search criteria:", JSON.stringify(criteria, null, 2));
     
     onSearch(criteria);
@@ -336,37 +393,85 @@ const SearchForm = ({ onSearch, isLoading }: SearchFormProps) => {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <Label htmlFor="search-volume">Search Volume</Label>
-                  <span className="text-sm text-muted-foreground">
-                    {searchVolumeRange[0].toLocaleString()} - {searchVolumeRange[1].toLocaleString()}
-                  </span>
                 </div>
-                <Slider
-                  id="search-volume"
-                  min={0}
-                  max={1000000}
-                  step={1000}
-                  value={searchVolumeRange}
-                  onValueChange={setSearchVolumeRange}
-                  className="py-4"
-                />
+                <div className="grid grid-cols-5 gap-4 items-center">
+                  <div className="col-span-1">
+                    <Input
+                      type="text"
+                      value={searchVolumeMin}
+                      onChange={(e) => handleSearchVolumeInputChange(true, e.target.value)}
+                      onBlur={() => handleSearchVolumeInputBlur(true)}
+                      className="w-full"
+                      aria-label="Minimum search volume"
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    <Slider
+                      id="search-volume"
+                      min={0}
+                      max={1000000}
+                      step={1000}
+                      value={searchVolumeRange}
+                      onValueChange={setSearchVolumeRange}
+                      className="py-4"
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    <Input
+                      type="text"
+                      value={searchVolumeMax}
+                      onChange={(e) => handleSearchVolumeInputChange(false, e.target.value)}
+                      onBlur={() => handleSearchVolumeInputBlur(false)}
+                      className="w-full"
+                      aria-label="Maximum search volume"
+                    />
+                  </div>
+                </div>
+                <div className="text-sm text-center text-muted-foreground">
+                  {parseInt(searchVolumeMin).toLocaleString()} - {parseInt(searchVolumeMax).toLocaleString()}
+                </div>
               </div>
 
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <Label htmlFor="cpc">Cost Per Click (CPC)</Label>
-                  <span className="text-sm text-muted-foreground">
-                    ${cpcRange[0].toFixed(2)} - ${cpcRange[1].toFixed(2)}
-                  </span>
                 </div>
-                <Slider
-                  id="cpc"
-                  min={0}
-                  max={1000}
-                  step={0.1}
-                  value={cpcRange}
-                  onValueChange={setCpcRange}
-                  className="py-4"
-                />
+                <div className="grid grid-cols-5 gap-4 items-center">
+                  <div className="col-span-1">
+                    <Input
+                      type="text"
+                      value={cpcMin}
+                      onChange={(e) => handleCpcInputChange(true, e.target.value)}
+                      onBlur={() => handleCpcInputBlur(true)}
+                      className="w-full"
+                      aria-label="Minimum CPC"
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    <Slider
+                      id="cpc"
+                      min={0}
+                      max={1000}
+                      step={0.1}
+                      value={cpcRange}
+                      onValueChange={setCpcRange}
+                      className="py-4"
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    <Input
+                      type="text"
+                      value={cpcMax}
+                      onChange={(e) => handleCpcInputChange(false, e.target.value)}
+                      onBlur={() => handleCpcInputBlur(false)}
+                      className="w-full"
+                      aria-label="Maximum CPC"
+                    />
+                  </div>
+                </div>
+                <div className="text-sm text-center text-muted-foreground">
+                  ${parseFloat(cpcMin).toFixed(2)} - ${parseFloat(cpcMax).toFixed(2)}
+                </div>
               </div>
 
               <div className="space-y-2">
