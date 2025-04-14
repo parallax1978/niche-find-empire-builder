@@ -83,27 +83,7 @@ serve(async (req) => {
     const authorizedIps = clientIpsString.split(',').map(ip => ip.trim());
     console.log(`Authorized IPs (${authorizedIps.length}):`, authorizedIps);
     
-    // For testing/development purposes, create a simulated successful response
-    // This will return "available: true" for all domains during development/debugging
-    const mockResponse = {
-      domain: `${sld}.${tld}`,
-      available: true,
-      premiumDomain: false,
-    };
-    
-    console.log(`DEVELOPMENT MODE: Returning mock availability data for ${domain}`);
-    console.log(mockResponse);
-    
-    return new Response(
-      JSON.stringify(mockResponse),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-    
-    /* 
-    // Real Namecheap API implementation - commented out for now
-    // Will re-enable once IP whitelisting issues are resolved
+    // Real Namecheap API implementation
     let apiResponse = null;
     let errorResponses = [];
 
@@ -237,7 +217,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
-    */
   } catch (error) {
     console.error("Error in check-domain-availability function:", error);
     
