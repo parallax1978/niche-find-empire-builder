@@ -31,12 +31,22 @@ serve(async (req) => {
     // Get API credentials from Supabase secrets
     const apiKey = Deno.env.get('NAMECHEAP_API_KEY');
     const clientIpsString = Deno.env.get('NAMECHEAP_CLIENT_IP');
+    const username = Deno.env.get('NAMECHEAP_USERNAME');
 
-    if (!apiKey || !clientIpsString) {
-      console.error('Missing required Namecheap API credentials');
+    if (!apiKey || !clientIpsString || !username) {
+      console.error('Missing required Namecheap API credentials', { 
+        hasApiKey: !!apiKey, 
+        hasClientIp: !!clientIpsString, 
+        hasUsername: !!username 
+      });
       return new Response(
         JSON.stringify({
           error: 'Server configuration error: Missing API credentials',
+          details: { 
+            missingApiKey: !apiKey, 
+            missingClientIp: !clientIpsString,
+            missingUsername: !username
+          }
         }),
         { 
           status: 500,
@@ -91,9 +101,9 @@ serve(async (req) => {
         // Build Namecheap API URL
         const apiUrl = new URL('https://api.namecheap.com/xml.response');
         const params = {
-          ApiUser: 'apiuser', // Using your regular account username
+          ApiUser: username, // Using the actual Namecheap username
           ApiKey: apiKey,
-          UserName: 'apiuser', // Using your regular account username
+          UserName: username, // Using the actual Namecheap username
           ClientIp: clientIp,
           Command: 'namecheap.domains.check',
           SLD: sld,
@@ -105,12 +115,18 @@ serve(async (req) => {
           apiUrl.searchParams.append(key, value.toString());
         });
 
-        console.log(`Calling Namecheap API with IP ${clientIp}: ${apiUrl}`);
+        // Log the full API URL for debugging (with sensitive parts masked)
+        const debugApiUrl = apiUrl.toString().replace(apiKey, 'API_KEY_MASKED');
+        console.log(`Calling Namecheap API with IP ${clientIp}: ${debugApiUrl}`);
 
         // Call Namecheap API
         const response = await fetch(apiUrl.toString());
         const xmlText = await response.text();
         console.log(`Response from IP ${clientIp}: Status ${response.status}, Body length: ${xmlText.length}`);
+        
+        // Debug: Log a snippet of the response to see what we're getting back
+        const responsePreview = xmlText.substring(0, 500) + (xmlText.length > 500 ? '...' : '');
+        console.log(`Response preview: ${responsePreview}`);
         
         // Check for API errors using regex
         const errorMatch = xmlText.match(/<Error Number="([^"]+)">([^<]+)<\/Error>/);
