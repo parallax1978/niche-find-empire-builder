@@ -30,9 +30,9 @@ serve(async (req) => {
   try {
     // Get API credentials from Supabase secrets
     const apiKey = Deno.env.get('NAMECHEAP_API_KEY');
-    const clientIp = Deno.env.get('NAMECHEAP_CLIENT_IP');
+    const clientIpsString = Deno.env.get('NAMECHEAP_CLIENT_IP');
 
-    if (!apiKey || !clientIp) {
+    if (!apiKey || !clientIpsString) {
       console.error('Missing required Namecheap API credentials');
       return new Response(
         JSON.stringify({
@@ -72,6 +72,13 @@ serve(async (req) => {
       sld = domain;
       tld = 'com';
     }
+
+    // Get the list of client IPs that have been authorized
+    // We choose the first IP from the comma-separated list for this request
+    const authorizedIps = clientIpsString.split(',').map(ip => ip.trim());
+    const clientIp = authorizedIps[0]; // Use the first IP in the list
+    
+    console.log(`Using client IP: ${clientIp} (from list of ${authorizedIps.length} authorized IPs)`);
 
     // Build Namecheap API URL
     const apiUrl = new URL('https://api.namecheap.com/xml.response');
