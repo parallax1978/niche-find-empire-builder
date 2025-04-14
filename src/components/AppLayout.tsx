@@ -1,21 +1,15 @@
 
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Container } from "@/components/ui/container";
-import { Home, Search, Settings } from "lucide-react";
+import { Home, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/integrations/supabase/client";  // Import the useUser hook
 
 const AppLayout = ({ children }: AppLayoutProps) => {
   const location = useLocation();
-  const user = useUser();  // Get the current user
   
   const isActive = (path: string) => {
     return location.pathname === path;
   };
-
-  // Check if the current user is an admin (adjust this logic based on your actual admin check)
-  const isAdmin = user && user.email === "your-admin-email@example.com";  // Replace with your actual admin check
 
   return (
     <div className="flex flex-col min-h-screen w-full">
@@ -45,22 +39,6 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 <span>Home</span>
               </Link>
               
-              {/* Only show admin link if user is an admin */}
-              {isAdmin && (
-                <Link 
-                  to="/admin" 
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors", 
-                    isActive("/admin") 
-                      ? "bg-brand-gradient text-white" 
-                      : "text-gray-700 hover:bg-gray-100"
-                  )}
-                >
-                  <Settings className="h-4 w-4" />
-                  <span>Admin</span>
-                </Link>
-              )}
-              
               <Link 
                 to="/search" 
                 className={cn(
@@ -88,21 +66,6 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               >
                 <Home className="h-5 w-5" />
               </Link>
-              
-              {/* Only show admin link if user is an admin */}
-              {isAdmin && (
-                <Link 
-                  to="/admin" 
-                  className={cn(
-                    "p-2 rounded-md", 
-                    isActive("/admin") 
-                      ? "bg-brand-gradient text-white" 
-                      : "text-gray-700 hover:bg-gray-100"
-                  )}
-                >
-                  <Settings className="h-5 w-5" />
-                </Link>
-              )}
               
               <Link 
                 to="/search" 
