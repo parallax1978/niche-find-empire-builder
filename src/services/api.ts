@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { City, Niche, SearchCriteria, KeywordResult } from "@/types";
 
@@ -110,6 +109,58 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
   }
 };
 
+// Check if a domain is available using the Namecheap API via our edge function
+export const checkDomainAvailability = async (domain: string): Promise<{ 
+  available: boolean, 
+  premiumDomain?: boolean,
+  purchasePrice?: string | null,
+  renewalPrice?: string | null,
+  errorMessage?: string 
+}> => {
+  try {
+    console.log(`Checking availability for domain: ${domain}`);
+
+    const { data, error } = await supabase.functions.invoke('check-domain-availability', {
+      body: { domain }
+    });
+
+    console.log('Domain availability response:', data);
+
+    if (error) {
+      console.error(`Error checking domain availability (${error.status}): ${error.message}`);
+      throw new Error(`Failed to check domain availability: ${error.message}`);
+    }
+
+    if (!data) {
+      console.error('No data received from edge function');
+      throw new Error('No data received from edge function');
+    }
+
+    if (data.error) {
+      console.error(`Error from edge function: ${data.error}`);
+      return {
+        available: false,
+        errorMessage: data.error
+      };
+    }
+
+    return {
+      available: data.available,
+      premiumDomain: data.premiumDomain,
+      purchasePrice: data.purchasePrice,
+      renewalPrice: data.renewalPrice,
+      errorMessage: null
+    };
+  } catch (error) {
+    console.error(`Error checking domain availability for "${domain}":`, error);
+    
+    return {
+      available: false,
+      errorMessage: error.message || "Unknown error occurred"
+    };
+  }
+};
+
 // Search for niches based on the provided criteria
 export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordResult[]> => {
   try {
@@ -191,15 +242,21 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
             continue;
           }
 
-          // Simple domain availability check (just for demo)
-          const domainAvailable = Math.random() > 0.7; // 30% chance available
+          // Check domain availability using Namecheap API for .com, .net, and .org
+          const domainBase = exactMatchDomain.replace('.com', '');
           
-          // Generate random availability for .net and .org domains
-          const netAvailable = Math.random() > 0.4; // 60% chance available
-          const orgAvailable = Math.random() > 0.5; // 50% chance available
+          // Get real domain availability data from Namecheap API
+          const comDomainCheck = await checkDomainAvailability(`${domainBase}.com`);
+          const netDomainCheck = await checkDomainAvailability(`${domainBase}.net`);
+          const orgDomainCheck = await checkDomainAvailability(`${domainBase}.org`);
+          
+          // Use the API response for domain availability
+          const comAvailable = comDomainCheck.available;
+          const netAvailable = netDomainCheck.available;
+          const orgAvailable = orgDomainCheck.available;
           
           // Create domain links for each extension if available
-          const baseNamecheapLink = `https://www.namecheap.com/domains/registration/results/?domain=${exactMatchDomain.replace('.com', '')}`;
+          const baseNamecheapLink = `https://www.namecheap.com/domains/registration/results/?domain=${domainBase}`;
           
           results.push({
             id: crypto.randomUUID(),
@@ -207,18 +264,18 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
             searchVolume,
             cpc,
             population: city.population,
-            domainAvailable, // Keep for backward compatibility
-            domainLink: domainAvailable ? `https://domains.google.com/registrar/search?searchTerm=${exactMatchDomain}` : null, // Keep for backward compatibility
+            domainAvailable: comAvailable, // Keep for backward compatibility
+            domainLink: comAvailable ? `https://domains.google.com/registrar/search?searchTerm=${exactMatchDomain}` : null, // Keep for backward compatibility
             exactMatchDomain,
             // Add the new domain status properties
             domainStatus: {
-              com: domainAvailable,
+              com: comAvailable,
               net: netAvailable,
               org: orgAvailable
             },
             // Add the new domain links properties
             domainLinks: {
-              com: domainAvailable ? `${baseNamecheapLink}.com` : null,
+              com: comAvailable ? `${baseNamecheapLink}.com` : null,
               net: netAvailable ? `${baseNamecheapLink}.net` : null,
               org: orgAvailable ? `${baseNamecheapLink}.org` : null
             }
