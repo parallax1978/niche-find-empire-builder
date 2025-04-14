@@ -74,43 +74,74 @@ serve(async (req) => {
     }
 
     // Get the list of client IPs that have been authorized
-    // We choose the first IP from the comma-separated list for this request
     const authorizedIps = clientIpsString.split(',').map(ip => ip.trim());
-    const clientIp = authorizedIps[0]; // Use the first IP in the list
     
-    console.log(`Using client IP: ${clientIp} (from list of ${authorizedIps.length} authorized IPs)`);
-
-    // Build Namecheap API URL
-    const apiUrl = new URL('https://api.namecheap.com/xml.response');
-    const params = {
-      ApiUser: 'apiuser', // Using your regular account username
-      ApiKey: apiKey,
-      UserName: 'apiuser', // Using your regular account username
-      ClientIp: clientIp,
-      Command: 'namecheap.domains.check',
-      SLD: sld,
-      TLD: tld
-    };
+    // Log all authorized IPs for debugging
+    console.log(`Authorized IPs (${authorizedIps.length}):`, authorizedIps);
     
-    // Add parameters to URL
-    Object.entries(params).forEach(([key, value]) => {
-      apiUrl.searchParams.append(key, value.toString());
-    });
+    // Try each authorized IP until one works
+    let apiResponse = null;
+    let errorResponses = [];
 
-    console.log(`Calling Namecheap API: ${apiUrl}`);
+    for (let i = 0; i < authorizedIps.length; i++) {
+      const clientIp = authorizedIps[i];
+      console.log(`Attempt ${i+1}: Trying with client IP: ${clientIp}`);
+      
+      try {
+        // Build Namecheap API URL
+        const apiUrl = new URL('https://api.namecheap.com/xml.response');
+        const params = {
+          ApiUser: 'apiuser', // Using your regular account username
+          ApiKey: apiKey,
+          UserName: 'apiuser', // Using your regular account username
+          ClientIp: clientIp,
+          Command: 'namecheap.domains.check',
+          SLD: sld,
+          TLD: tld
+        };
+        
+        // Add parameters to URL
+        Object.entries(params).forEach(([key, value]) => {
+          apiUrl.searchParams.append(key, value.toString());
+        });
 
-    // Call Namecheap API
-    const response = await fetch(apiUrl.toString());
+        console.log(`Calling Namecheap API with IP ${clientIp}: ${apiUrl}`);
+
+        // Call Namecheap API
+        const response = await fetch(apiUrl.toString());
+        const xmlText = await response.text();
+        console.log(`Response from IP ${clientIp}: Status ${response.status}, Body length: ${xmlText.length}`);
+        
+        // Check for API errors using regex
+        const errorMatch = xmlText.match(/<Error Number="([^"]+)">([^<]+)<\/Error>/);
+        
+        if (!response.ok || errorMatch) {
+          const errorNumber = errorMatch ? errorMatch[1] : 'unknown';
+          const errorMessage = errorMatch ? errorMatch[2] : `HTTP ${response.status}: ${response.statusText}`;
+          
+          console.error(`Error with IP ${clientIp}: ${errorNumber} - ${errorMessage}`);
+          errorResponses.push({ ip: clientIp, errorNumber, errorMessage });
+          continue; // Try next IP
+        }
+        
+        // Success - store response and break the loop
+        apiResponse = { response, xmlText };
+        console.log(`Successfully got response with IP ${clientIp}`);
+        break;
+      } catch (err) {
+        console.error(`Exception with IP ${clientIp}:`, err.message);
+        errorResponses.push({ ip: clientIp, error: err.message });
+      }
+    }
     
-    if (!response.ok) {
-      console.error(`Error from Namecheap API: ${response.status} ${response.statusText}`);
-      const errorText = await response.text();
-      console.error(`Response body: ${errorText}`);
+    // If we've tried all IPs and none worked
+    if (!apiResponse) {
+      console.error("All authorized IPs failed:", errorResponses);
       
       return new Response(
         JSON.stringify({ 
-          error: 'Failed to check domain availability',
-          details: `API returned ${response.status}: ${response.statusText}`
+          error: 'All authorized IPs failed to connect to Namecheap API',
+          details: errorResponses
         }),
         { 
           status: 502,
@@ -118,31 +149,10 @@ serve(async (req) => {
         }
       );
     }
-
-    // Parse XML response using regex instead of DOMParser
-    const xmlText = await response.text();
-    console.log(`API Response: ${xmlText}`);
     
-    // Check for API errors using regex
-    const errorMatch = xmlText.match(/<Error Number="([^"]+)">([^<]+)<\/Error>/);
-    if (errorMatch) {
-      const errorNumber = errorMatch[1];
-      const errorMessage = errorMatch[2];
-      
-      console.error(`Namecheap API error: ${errorNumber} - ${errorMessage}`);
-      
-      return new Response(
-        JSON.stringify({ 
-          error: 'Namecheap API returned an error',
-          details: { errorNumber, errorMessage }
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
+    const { xmlText } = apiResponse;
+    console.log("Processing successful API response");
+    
     // Extract domain availability information using regex
     const availabilityMatch = xmlText.match(/<DomainCheckResult Domain="[^"]+" Available="([^"]+)"/);
     
@@ -151,7 +161,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: 'Could not parse domain availability from API response',
-          rawResponse: xmlText
+          rawResponse: xmlText.substring(0, 1000) // Limit output size for logging
         }),
         { 
           status: 500,
