@@ -8,6 +8,20 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Log incoming request details
+  console.log('Request headers:', Object.fromEntries(req.headers.entries()));
+  
+  // Try to get client IP from different possible headers
+  const clientIps = [
+    req.headers.get('x-forwarded-for'),
+    req.headers.get('x-real-ip'),
+    req.headers.get('client-ip'),
+    req.headers.get('X-Forwarded-For'),
+    req.headers.get('X-Real-IP')
+  ].filter(ip => ip !== null);
+
+  console.log('Detected Client IPs:', clientIps);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
