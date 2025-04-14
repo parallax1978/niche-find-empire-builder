@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { City, Niche, SearchCriteria, KeywordResult } from "@/types";
 
@@ -245,7 +246,7 @@ export const searchNiches = async (criteria: SearchCriteria): Promise<KeywordRes
           // Check domain availability using Namecheap API for .com, .net, and .org
           const domainBase = exactMatchDomain.replace('.com', '');
           
-          // Get real domain availability data from Namecheap API
+          // Get domain availability data from Namecheap API
           const comDomainCheck = await checkDomainAvailability(`${domainBase}.com`);
           const netDomainCheck = await checkDomainAvailability(`${domainBase}.net`);
           const orgDomainCheck = await checkDomainAvailability(`${domainBase}.org`);
