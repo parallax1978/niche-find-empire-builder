@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 
 // CORS headers for cross-origin requests
 const corsHeaders = {
@@ -68,7 +67,6 @@ serve(async (req) => {
       UserName: 'apiuser', // Using your regular account username
       ClientIp: clientIp,
       Command: 'namecheap.domains.check',
-      ClientIp: clientIp,
       SLD: sld,
       TLD: tld
     };
@@ -100,27 +98,22 @@ serve(async (req) => {
       );
     }
 
-    // Parse XML response
+    // Parse XML response using regex instead of DOMParser
     const xmlText = await response.text();
     console.log(`API Response: ${xmlText}`);
     
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-    
-    // Check for API errors
-    const errorElements = xmlDoc?.querySelector("Errors");
-    if (errorElements && errorElements.children.length > 0) {
-      const errors = Array.from(errorElements.children).map(error => ({
-        number: error.getAttribute("Number"),
-        message: error.textContent
-      }));
+    // Check for API errors using regex
+    const errorMatch = xmlText.match(/<Error Number="([^"]+)">([^<]+)<\/Error>/);
+    if (errorMatch) {
+      const errorNumber = errorMatch[1];
+      const errorMessage = errorMatch[2];
       
-      console.error("Namecheap API errors:", errors);
+      console.error(`Namecheap API error: ${errorNumber} - ${errorMessage}`);
       
       return new Response(
         JSON.stringify({ 
-          error: 'Namecheap API returned errors',
-          details: errors
+          error: 'Namecheap API returned an error',
+          details: { errorNumber, errorMessage }
         }),
         { 
           status: 400,
@@ -129,10 +122,10 @@ serve(async (req) => {
       );
     }
 
-    // Extract domain availability information
-    const domainCheckResult = xmlDoc?.querySelector("DomainCheckResult");
+    // Extract domain availability information using regex
+    const availabilityMatch = xmlText.match(/<DomainCheckResult Domain="[^"]+" Available="([^"]+)"/);
     
-    if (!domainCheckResult) {
+    if (!availabilityMatch) {
       console.error("Unable to parse domain check result from API response");
       return new Response(
         JSON.stringify({ 
@@ -146,18 +139,33 @@ serve(async (req) => {
       );
     }
     
-    const available = domainCheckResult.getAttribute("Available") === "true";
-    const errorCode = domainCheckResult.getAttribute("ErrorNo") || null;
+    const available = availabilityMatch[1].toLowerCase() === "true";
+    
+    // Extract premium domain information if available
+    const isPremiumMatch = xmlText.match(/IsPremiumName="([^"]+)"/);
+    const premiumDomain = isPremiumMatch ? isPremiumMatch[1].toLowerCase() === "true" : false;
+    
+    // Extract premium pricing if available
+    const premiumPriceMatch = xmlText.match(/PremiumRegistrationPrice="([^"]+)"/);
+    const purchasePrice = premiumPriceMatch ? premiumPriceMatch[1] : null;
+    
+    const renewalPriceMatch = xmlText.match(/PremiumRenewalPrice="([^"]+)"/);
+    const renewalPrice = renewalPriceMatch ? renewalPriceMatch[1] : null;
+    
+    const transferPriceMatch = xmlText.match(/PremiumTransferPrice="([^"]+)"/);
+    const transferPrice = transferPriceMatch ? transferPriceMatch[1] : null;
+    
+    const restorePriceMatch = xmlText.match(/PremiumRestorePrice="([^"]+)"/);
+    const restorePrice = restorePriceMatch ? restorePriceMatch[1] : null;
     
     const result = {
       domain: `${sld}.${tld}`,
       available,
-      errorCode,
-      premiumDomain: domainCheckResult.getAttribute("IsPremiumName") === "true" || false,
-      purchasePrice: domainCheckResult.getAttribute("PremiumRegistrationPrice") || null,
-      renewalPrice: domainCheckResult.getAttribute("PremiumRenewalPrice") || null,
-      transferPrice: domainCheckResult.getAttribute("PremiumTransferPrice") || null,
-      restorePrice: domainCheckResult.getAttribute("PremiumRestorePrice") || null,
+      premiumDomain,
+      purchasePrice,
+      renewalPrice,
+      transferPrice,
+      restorePrice,
     };
     
     console.log(`Domain availability result:`, result);
