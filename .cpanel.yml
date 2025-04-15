@@ -5,6 +5,7 @@ deployment:
     - /opt/cpanel/ea-nodejs18/bin/npm install
     - /bin/echo "Building Vite app..."
     - /opt/cpanel/ea-nodejs18/bin/npm run build
-    - /bin/echo "Deploying build to public_html..."
+    - /bin/echo "Cleaning public_html..."
     - /bin/rm -rf /home/rankandrentniche/public_html/*
+    - /bin/echo "Copying build output..."
     - /bin/cp -R dist/* /home/rankandrentniche/public_html/
