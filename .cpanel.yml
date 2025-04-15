@@ -1,3 +1,6 @@
+version_control:
+  dir: /home/rankandrentniche/rankandrentniche
+
 deployment:
   tasks:
     - /bin/echo "Installing dependencies..."
@@ -8,6 +11,4 @@ deployment:
     - /bin/rm -rf /home/rankandrentniche/public_html/*
     - /bin/echo "Copying build output..."
     - /bin/cp -R dist/. /home/rankandrentniche/public_html/
-    - /bin/echo "Contents of public_html after copy:"
-    - /bin/ls -la /home/rankandrentniche/public_html/
     - /bin/echo "✅ Deployment complete."
