@@ -5,7 +5,7 @@ deployment:
     - /opt/cpanel/ea-nodejs18/bin/npm install
     - /bin/echo "Building Vite app..."
     - /opt/cpanel/ea-nodejs18/bin/npm run build
-    - /bin/echo "Deploying to public_html..."
+    - /bin/echo "Deploying build to public_html..."
     - export DEPLOYPATH=/home/rankandrentniche/public_html/
     - /bin/rm -rf $DEPLOYPATH/*
     - /bin/cp -R dist/* $DEPLOYPATH
