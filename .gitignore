@@ -23,8 +23,3 @@ dist-ssr
 *.sln
 *.sw?
 
-assets/
-favicon.ico
-placeholder.svg
-robots.txt
-
