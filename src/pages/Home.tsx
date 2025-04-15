@@ -12,7 +12,7 @@ const Home = () => {
           <div className="py-16 md:py-24">
             <div className="text-center max-w-3xl mx-auto">
               <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                Find Profitable Local SEO Niches.
+                Find Profitable Local SEO Niches
               </h1>
               <p className="text-lg md:text-xl mb-8 opacity-90">
                 Discover untapped rank and rent opportunities with our powerful niche finder tool
