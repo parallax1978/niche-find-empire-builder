@@ -1,11 +1,11 @@
 ---
 deployment:
   tasks:
-    - /bin/echo "Installing dependencies..."
-    - /opt/cpanel/ea-nodejs18/bin/npm install
-    - /bin/echo "Building project..."
-    - /opt/cpanel/ea-nodejs18/bin/npm run build
-    - /bin/echo "Copying build to public_html..."
+    - /bin/echo "Installing dependencies..." | tee -a ~/deploy.log
+    - /opt/cpanel/ea-nodejs18/bin/npm install 2>&1 | tee -a ~/deploy.log
+    - /bin/echo "Building project..." | tee -a ~/deploy.log
+    - /opt/cpanel/ea-nodejs18/bin/npm run build 2>&1 | tee -a ~/deploy.log
+    - /bin/echo "Copying build to public_html..." | tee -a ~/deploy.log
     - export DEPLOYPATH=/home/rankandrentniche/public_html/
     - /bin/mkdir -p $DEPLOYPATH
-    - /bin/cp -R dist/* $DEPLOYPATH
+    - /bin/cp -R dist/* $DEPLOYPATH 2>&1 | tee -a ~/deploy.log
