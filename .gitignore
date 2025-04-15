@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+assets/
+favicon.ico
+placeholder.svg
+robots.txt
+
