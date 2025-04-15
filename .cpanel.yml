@@ -1,11 +1,13 @@
----
 deployment:
   tasks:
     - /bin/echo "Installing dependencies..."
     - /opt/cpanel/ea-nodejs18/bin/npm install
     - /bin/echo "Building Vite app..."
     - /opt/cpanel/ea-nodejs18/bin/npm run build
+    - /bin/echo "Fixing permissions..."
+    - /bin/chown -R rankandrentniche:nobody dist
     - /bin/echo "Cleaning public_html..."
     - /bin/rm -rf /home/rankandrentniche/public_html/*
     - /bin/echo "Copying build output..."
-    - /bin/cp -R dist/* /home/rankandrentniche/public_html/
+    - /bin/cp -R dist/. /home/rankandrentniche/public_html/
+    - /bin/echo "✅ Deployment complete."
