@@ -36,19 +36,7 @@ serve(async (req) => {
         hasUsername: !!username 
       });
       
-      // Return fallback value instead of an error
-      return new Response(
-        JSON.stringify({
-          available: Math.random() > 0.5, // Randomly return available or not for demonstration
-          premiumDomain: false,
-          purchasePrice: null,
-          renewalPrice: null,
-          note: "Using fallback values due to missing API credentials"
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+      throw new Error('Missing required API credentials');
     }
 
     // Parse request body to get the domain to check
@@ -86,11 +74,11 @@ serve(async (req) => {
     const authorizedIps = clientIpsString.split(',').map(ip => ip.trim());
     console.log(`Authorized IPs (${authorizedIps.length}):`, authorizedIps);
     
-    // Try to call the real Namecheap API
+    // Try to call the Namecheap API
     let apiResponse = null;
     let errorResponses = [];
 
-    for (let i = 0; i < authorizedIps.length && i < 1; i++) { // Limit to 1 attempt to reduce latency
+    for (let i = 0; i < authorizedIps.length && !apiResponse; i++) {
       const clientIp = authorizedIps[i];
       console.log(`Attempt ${i+1}: Trying with client IP: ${clientIp}`);
       
@@ -112,13 +100,13 @@ serve(async (req) => {
           apiUrl.searchParams.append(key, value.toString());
         });
 
-        // Log the full API URL for debugging (with sensitive parts masked)
+        // Log the API URL with sensitive parts masked
         const debugApiUrl = apiUrl.toString().replace(apiKey, 'API_KEY_MASKED');
         console.log(`Calling Namecheap API with IP ${clientIp}: ${debugApiUrl}`);
 
-        // Call Namecheap API with a timeout to prevent long waits
+        // Call Namecheap API with a timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
         
         const response = await fetch(apiUrl.toString(), {
           signal: controller.signal
@@ -127,7 +115,7 @@ serve(async (req) => {
         const xmlText = await response.text();
         console.log(`Response from IP ${clientIp}: Status ${response.status}, Body length: ${xmlText.length}`);
         
-        // Debug: Log a snippet of the response to see what we're getting back
+        // Log a snippet of the response for debugging
         const responsePreview = xmlText.substring(0, 500) + (xmlText.length > 500 ? '...' : '');
         console.log(`Response preview: ${responsePreview}`);
         
@@ -144,7 +132,7 @@ serve(async (req) => {
         }
         
         // Success - store response and break the loop
-        apiResponse = { response, xmlText };
+        apiResponse = xmlText;
         console.log(`Successfully got response with IP ${clientIp}`);
         break;
       } catch (err) {
@@ -153,30 +141,13 @@ serve(async (req) => {
       }
     }
     
-    // If we've tried all IPs and none worked, return a fallback response
+    // If all IPs failed, return an error
     if (!apiResponse) {
       console.error("All authorized IPs failed:", errorResponses);
-      
-      // Generate a fallback response with random availability
-      const randomAvailable = Math.random() > 0.5;
-      
-      return new Response(
-        JSON.stringify({ 
-          available: randomAvailable,
-          premiumDomain: false,
-          purchasePrice: null,
-          renewalPrice: null,
-          fallback: true,
-          fallbackReason: "IP validation failed with Namecheap API",
-          details: errorResponses
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+      throw new Error("IP validation failed with Namecheap API");
     }
     
-    const { xmlText } = apiResponse;
+    const xmlText = apiResponse;
     console.log("Processing successful API response");
     
     // Extract domain availability information using regex
@@ -184,24 +155,7 @@ serve(async (req) => {
     
     if (!availabilityMatch) {
       console.error("Unable to parse domain check result from API response");
-      
-      // Generate a fallback response with random availability
-      const randomAvailable = Math.random() > 0.5;
-      
-      return new Response(
-        JSON.stringify({ 
-          available: randomAvailable,
-          premiumDomain: false,
-          purchasePrice: null,
-          renewalPrice: null,
-          fallback: true,
-          fallbackReason: "Failed to parse API response",
-          rawResponsePreview: xmlText.substring(0, 1000) // Limit output size for logging
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+      throw new Error("Failed to parse API response");
     }
     
     const available = availabilityMatch[1].toLowerCase() === "true";
@@ -244,20 +198,17 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in check-domain-availability function:", error);
     
-    // Generate a fallback response with random availability
-    const randomAvailable = Math.random() > 0.3; // 70% chance it's available for better UX
-    
     return new Response(
       JSON.stringify({ 
-        available: randomAvailable,
+        available: false,
         premiumDomain: false,
         purchasePrice: null,
         renewalPrice: null,
-        fallback: true,
-        fallbackReason: "Server error",
+        error: true,
         errorMessage: error.message || "Unknown error"
       }),
       { 
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );

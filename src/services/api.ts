@@ -159,6 +159,15 @@ export const checkDomainAvailability = async (domain: string): Promise<{
       };
     }
 
+    // If we got an error message in the response, include it
+    if (data.errorMessage) {
+      console.error(`Error message from response: ${data.errorMessage}`);
+      return {
+        available: false,
+        errorMessage: data.errorMessage
+      };
+    }
+
     // If we got a valid response, return the domain availability info
     return {
       available: data.available,
