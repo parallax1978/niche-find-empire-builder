@@ -41,7 +41,7 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
   const handlePurchaseBasePackage = async () => {
     setIsPurchasing(true);
     try {
-      const response = await initiateCheckout('price_YOUR_BASE_PACKAGE_PRICE_ID');
+      const response = await initiateCheckout('price_1REebyBLSlqVQTdBMTgjVes');
       if (response?.sessionUrl) {
         window.location.href = response.sessionUrl;
       } else {
@@ -66,7 +66,7 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
   const handlePurchaseAdditionalCredits = async (quantity: number) => {
     setIsPurchasing(true);
     try {
-      const response = await initiateCheckout('price_YOUR_ADDITIONAL_CREDITS_PRICE_ID', quantity);
+      const response = await initiateCheckout('price_1REef7BLSlqVQTdBXmVmVoXQ', quantity);
       if (response?.sessionUrl) {
         window.location.href = response.sessionUrl;
       } else {
