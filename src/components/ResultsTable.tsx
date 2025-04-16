@@ -165,14 +165,13 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
   
   const renderDomainAction = (result: KeywordResult, extension: keyof typeof result.domainStatus) => {
     const available = result.domainStatus[extension];
-    const domain = `${result.exactMatchDomain}.${extension}`;
     
     if (available) {
       return (
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleDomainAction(domain)}
+          onClick={() => window.open("https://namecheap.pxf.io/nVdZx", "_blank")}
           className="border-brand-from text-brand-from hover:bg-brand-gradient hover:text-white transition-all"
         >
           <Globe className="mr-1 h-3 w-3" />
