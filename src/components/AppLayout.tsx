@@ -1,15 +1,58 @@
 
-import React, { ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Home, Search, Compass, User } from "lucide-react";
+import React, { ReactNode, useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Home, Search, Compass, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CreditsDisplay from "@/components/CreditsDisplay";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const AppLayout = ({ children }: AppLayoutProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  
+  useEffect(() => {
+    // Check authentication status
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getUser();
+      setIsAuthenticated(!!data.user);
+    };
+    
+    checkAuth();
+
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session?.user);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
   
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Logout failed",
+        description: "An error occurred during logout",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -28,7 +71,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             </div>
             
             <nav className="hidden md:flex space-x-4 ml-auto items-center">
-              <CreditsDisplay minimal />
+              {isAuthenticated && <CreditsDisplay minimal />}
               
               <Link 
                 to="/" 
@@ -56,18 +99,45 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 <span>Search</span>
               </Link>
 
-              <Link 
-                to="/account" 
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors", 
-                  isActive("/account") 
-                    ? "bg-brand-gradient text-white" 
-                    : "text-gray-700 hover:bg-gray-100"
-                )}
-              >
-                <User className="h-4 w-4" />
-                <span>Account</span>
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link 
+                    to="/account" 
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors", 
+                      isActive("/account") 
+                        ? "bg-brand-gradient text-white" 
+                        : "text-gray-700 hover:bg-gray-100"
+                    )}
+                  >
+                    <User className="h-4 w-4" />
+                    <span>Account</span>
+                  </Link>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleLogout}
+                    className="flex items-center gap-1.5"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </Button>
+                </>
+              ) : (
+                <Link 
+                  to="/auth" 
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors", 
+                    isActive("/auth") 
+                      ? "bg-brand-gradient text-white" 
+                      : "text-gray-700 hover:bg-gray-100"
+                  )}
+                >
+                  <User className="h-4 w-4" />
+                  <span>Login / Sign Up</span>
+                </Link>
+              )}
             </nav>
             
             {/* Mobile Navigation Links */}
@@ -96,17 +166,41 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 <Search className="h-5 w-5" />
               </Link>
 
-              <Link 
-                to="/account" 
-                className={cn(
-                  "p-2 rounded-md", 
-                  isActive("/account") 
-                    ? "bg-brand-gradient text-white" 
-                    : "text-gray-700 hover:bg-gray-100"
-                )}
-              >
-                <User className="h-5 w-5" />
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link 
+                    to="/account" 
+                    className={cn(
+                      "p-2 rounded-md", 
+                      isActive("/account") 
+                        ? "bg-brand-gradient text-white" 
+                        : "text-gray-700 hover:bg-gray-100"
+                    )}
+                  >
+                    <User className="h-5 w-5" />
+                  </Link>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="h-5 w-5" />
+                  </Button>
+                </>
+              ) : (
+                <Link 
+                  to="/auth" 
+                  className={cn(
+                    "p-2 rounded-md", 
+                    isActive("/auth") 
+                      ? "bg-brand-gradient text-white" 
+                      : "text-gray-700 hover:bg-gray-100"
+                  )}
+                >
+                  <User className="h-5 w-5" />
+                </Link>
+              )}
             </div>
           </div>
         </div>

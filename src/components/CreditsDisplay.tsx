@@ -1,10 +1,13 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Coins, CreditCard, Package } from "lucide-react";
+import { Coins, CreditCard, Package, LogIn } from "lucide-react";
 import { getUserCredits, initiateCheckout } from "@/services/creditsService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 
 interface CreditsDisplayProps {
   minimal?: boolean;
@@ -15,30 +18,64 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
   const [credits, setCredits] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchCredits = async () => {
-      setIsLoading(true);
-      try {
-        const userCredits = await getUserCredits();
-        setCredits(userCredits);
-      } catch (error) {
-        console.error("Failed to fetch credits:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch your credits.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
+    // Check authentication status
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getUser();
+      setIsAuthenticated(!!data.user);
+      
+      if (data.user) {
+        await fetchCredits();
       }
     };
+    
+    checkAuth();
 
-    fetchCredits();
-  }, [toast]);
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const isLoggedIn = !!session?.user;
+      setIsAuthenticated(isLoggedIn);
+      
+      if (isLoggedIn) {
+        await fetchCredits();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchCredits = async () => {
+    setIsLoading(true);
+    try {
+      const userCredits = await getUserCredits();
+      setCredits(userCredits);
+    } catch (error) {
+      console.error("Failed to fetch credits:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch your credits.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePurchaseBasePackage = async () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to purchase credits.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsPurchasing(true);
     try {
       const response = await initiateCheckout('price_1REebyBLSlqVQTdBMTgjVes');
@@ -64,6 +101,15 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
   };
 
   const handlePurchaseAdditionalCredits = async (quantity: number) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to purchase credits.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsPurchasing(true);
     try {
       const response = await initiateCheckout('price_1REef7BLSlqVQTdBXmVmVoXQ', quantity);
@@ -88,13 +134,50 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
     }
   };
 
-  if (isLoading) {
-    return minimal ? (
-      <div className="flex items-center gap-2">
+  if (minimal) {
+    if (!isAuthenticated) {
+      return null;
+    }
+    
+    if (isLoading) {
+      return (
+        <div className="flex items-center gap-2">
+          <Coins className="h-4 w-4 text-yellow-500" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-2 font-medium">
         <Coins className="h-4 w-4 text-yellow-500" />
-        <Skeleton className="h-4 w-16" />
+        <span>{credits ?? 0} credits</span>
       </div>
-    ) : (
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Credits</CardTitle>
+          <CardDescription>Purchase credits to find more keywords</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-8">
+          <p className="text-center mb-4">Please sign in to view and purchase credits</p>
+          <Button asChild>
+            <Link to="/auth" className="flex items-center gap-2">
+              <LogIn className="h-4 w-4" />
+              Sign In / Create Account
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isLoading) {
+    return (
       <Card>
         <CardHeader>
           <CardTitle>Your Credits</CardTitle>
@@ -104,15 +187,6 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
           <Skeleton className="h-10 w-28" />
         </CardContent>
       </Card>
-    );
-  }
-
-  if (minimal) {
-    return (
-      <div className="flex items-center gap-2 font-medium">
-        <Coins className="h-4 w-4 text-yellow-500" />
-        <span>{credits ?? 0} credits</span>
-      </div>
     );
   }
 

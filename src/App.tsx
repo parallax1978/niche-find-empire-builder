@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import Search from "./pages/Search";
 import Admin from "./pages/Admin";
 import Account from "./pages/Account";
+import Auth from "./pages/Auth";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
 
@@ -39,6 +40,11 @@ const App = () => (
           <Route path="/account" element={
             <AppLayout>
               <Account />
+            </AppLayout>
+          } />
+          <Route path="/auth" element={
+            <AppLayout>
+              <Auth />
             </AppLayout>
           } />
           <Route path="/payment-success" element={
