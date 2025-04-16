@@ -8,6 +8,8 @@ import AppLayout from "./components/AppLayout";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
 import Admin from "./pages/Admin";
+import Account from "./pages/Account";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,16 @@ const App = () => (
           <Route path="/admin" element={
             <AppLayout>
               <Admin />
+            </AppLayout>
+          } />
+          <Route path="/account" element={
+            <AppLayout>
+              <Account />
+            </AppLayout>
+          } />
+          <Route path="/payment-success" element={
+            <AppLayout>
+              <PaymentSuccess />
             </AppLayout>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

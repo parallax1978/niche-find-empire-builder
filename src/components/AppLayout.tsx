@@ -1,8 +1,9 @@
 
 import React, { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Search, Compass } from "lucide-react";
+import { Home, Search, Compass, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import CreditsDisplay from "@/components/CreditsDisplay";
 
 const AppLayout = ({ children }: AppLayoutProps) => {
   const location = useLocation();
@@ -26,7 +27,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               </Link>
             </div>
             
-            <nav className="hidden md:flex space-x-4 ml-auto">
+            <nav className="hidden md:flex space-x-4 ml-auto items-center">
+              <CreditsDisplay minimal />
+              
               <Link 
                 to="/" 
                 className={cn(
@@ -51,6 +54,19 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               >
                 <Search className="h-4 w-4" />
                 <span>Search</span>
+              </Link>
+
+              <Link 
+                to="/account" 
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors", 
+                  isActive("/account") 
+                    ? "bg-brand-gradient text-white" 
+                    : "text-gray-700 hover:bg-gray-100"
+                )}
+              >
+                <User className="h-4 w-4" />
+                <span>Account</span>
               </Link>
             </nav>
             
@@ -79,6 +95,18 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               >
                 <Search className="h-5 w-5" />
               </Link>
+
+              <Link 
+                to="/account" 
+                className={cn(
+                  "p-2 rounded-md", 
+                  isActive("/account") 
+                    ? "bg-brand-gradient text-white" 
+                    : "text-gray-700 hover:bg-gray-100"
+                )}
+              >
+                <User className="h-5 w-5" />
+              </Link>
             </div>
           </div>
         </div>
@@ -106,4 +134,3 @@ export default AppLayout;
 interface AppLayoutProps {
   children: ReactNode;
 }
-
