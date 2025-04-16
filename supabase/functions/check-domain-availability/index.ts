@@ -26,14 +26,13 @@ serve(async (req) => {
         hasClientIp: !!clientIp 
       });
       
-      // Fall back to a simulation mode if credentials are missing
       return new Response(
         JSON.stringify({ 
-          available: true, // Simulate domain available for testing
-          premiumDomain: false,
-          errorMessage: 'API credentials missing - running in simulation mode'
+          error: true,
+          errorMessage: 'Missing required Namecheap API credentials. Please check your Supabase secrets.'
         }),
         { 
+          status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
@@ -45,8 +44,8 @@ serve(async (req) => {
     if (!domain) {
       return new Response(
         JSON.stringify({ 
-          error: 'Domain parameter is required',
-          available: false
+          error: true,
+          errorMessage: 'Domain parameter is required'
         }),
         { 
           status: 400,
@@ -99,26 +98,29 @@ serve(async (req) => {
       signal: controller.signal
     }).finally(() => clearTimeout(timeoutId));
     
+    // Log detailed response information for troubleshooting
+    console.log(`Response status: ${response.status}`);
+    console.log(`Response headers: ${JSON.stringify([...response.headers.entries()])}`);
+    
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`HTTP error: ${response.status} - ${errorText.substring(0, 500)}`);
       
-      // Fall back to a simulation mode if the API request fails
       return new Response(
         JSON.stringify({ 
-          available: true, // Simulate domain available for testing
-          premiumDomain: false,
-          error: false,
-          errorMessage: `API issue - running in simulation mode`
+          error: true,
+          available: false,
+          errorMessage: `Namecheap API error: ${response.status} - ${errorText.substring(0, 100)}`
         }),
         { 
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
     
     const xmlText = await response.text();
-    console.log(`Response status: ${response.status}, Body length: ${xmlText.length}`);
+    console.log(`Response body length: ${xmlText.length}`);
     
     // Log a snippet of the response for debugging
     const responsePreview = xmlText.substring(0, 500) + (xmlText.length > 500 ? '...' : '');
@@ -133,15 +135,14 @@ serve(async (req) => {
       
       console.error(`API error: ${errorNumber} - ${errorMessage}`);
       
-      // If there's an issue with the API, simulate domain availability for testing
       return new Response(
         JSON.stringify({ 
-          available: true, // Simulate domain available for testing
-          premiumDomain: false,
-          error: false,
-          errorMessage: `API issue - running in simulation mode`
+          error: true,
+          available: false,
+          errorMessage: `Namecheap API error: ${errorMessage}`
         }),
         { 
+          status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
@@ -153,15 +154,14 @@ serve(async (req) => {
     if (!availabilityMatch) {
       console.error("Unable to parse domain check result from API response");
       
-      // Fall back if we can't parse the response
       return new Response(
         JSON.stringify({ 
-          available: true, // Simulate domain available for testing
-          premiumDomain: false,
-          error: false,
-          errorMessage: "Simulation mode - API parsing issue"
+          error: true,
+          available: false,
+          errorMessage: "Failed to parse domain availability from API response"
         }),
         { 
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
@@ -185,7 +185,8 @@ serve(async (req) => {
       available,
       premiumDomain,
       purchasePrice,
-      renewalPrice
+      renewalPrice,
+      error: false
     };
     
     console.log(`Domain availability result:`, result);
@@ -199,17 +200,14 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in check-domain-availability function:", error);
     
-    // Fall back to a simulation mode in case of unexpected errors
     return new Response(
       JSON.stringify({ 
-        available: true, // Simulate domain available for testing
-        premiumDomain: false,
-        purchasePrice: null,
-        renewalPrice: null,
-        error: false,
-        errorMessage: "Simulation mode - unexpected error"
+        error: true,
+        available: false,
+        errorMessage: `Unexpected error: ${error.message}`
       }),
       { 
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );

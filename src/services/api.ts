@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { City, Niche, SearchCriteria, KeywordResult } from "@/types";
 
@@ -130,7 +129,6 @@ export const checkDomainAvailability = async (domain: string): Promise<{
     if (error) {
       console.error(`Error checking domain availability (${error.status}): ${error.message}`);
       
-      // If the edge function had an error, assume the domain is unavailable
       return {
         available: false,
         errorMessage: `Failed to check domain availability: ${error.message}`
@@ -146,9 +144,8 @@ export const checkDomainAvailability = async (domain: string): Promise<{
     }
 
     if (data.error) {
-      console.error(`Error from edge function: ${data.errorMessage || data.error}`);
+      console.error(`Error from edge function: ${data.errorMessage || 'Unknown error'}`);
       
-      // Return unavailable with the specific error message
       return {
         available: false,
         errorMessage: data.errorMessage || 'Error checking domain availability'
@@ -166,7 +163,6 @@ export const checkDomainAvailability = async (domain: string): Promise<{
   } catch (error) {
     console.error(`Error checking domain availability for "${domain}":`, error);
     
-    // Return unavailable with error message
     return {
       available: false,
       errorMessage: error.message || "Unknown error occurred"
