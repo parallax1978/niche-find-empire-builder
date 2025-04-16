@@ -1,9 +1,8 @@
-
 import { Link } from "react-router-dom";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
-import { Search, Settings, ArrowRight, Globe, DollarSign, Users } from "lucide-react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Search, ArrowRight, Globe, DollarSign } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Home = () => {
   return (
@@ -12,7 +11,7 @@ const Home = () => {
         <Container>
           <div className="py-16 md:py-24">
             <div className="text-center max-w-3xl mx-auto">
-              <h1 className="text-4xl md:text-5xl font-bold mb-6 text-brand-from">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-[#8711c5] to-[#0071c5] text-transparent bg-clip-text">
                 Find Profitable Local SEO Niches
               </h1>
               <p className="text-lg md:text-xl mb-8 text-gray-700">
