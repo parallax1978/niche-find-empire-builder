@@ -37,7 +37,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card>
               <CardHeader>
-                <Search className="h-10 w-10 text-brand-from mb-2" />
+                <Search className="h-10 w-10 text-[#5414C2] mb-2" />
                 <CardTitle>Find Keywords</CardTitle>
                 <CardDescription>
                   Search for profitable keywords in specific cities and niches
@@ -52,7 +52,7 @@ const Home = () => {
             
             <Card>
               <CardHeader>
-                <Globe className="h-10 w-10 text-brand-from mb-2" />
+                <Globe className="h-10 w-10 text-[#5414C2] mb-2" />
                 <CardTitle>Check Domains</CardTitle>
                 <CardDescription>
                   See if exact match domains are available for registration
@@ -67,7 +67,7 @@ const Home = () => {
             
             <Card>
               <CardHeader>
-                <DollarSign className="h-10 w-10 text-brand-from mb-2" />
+                <DollarSign className="h-10 w-10 text-[#5414C2] mb-2" />
                 <CardTitle>Build & Rent</CardTitle>
                 <CardDescription>
                   Create websites for high-value keywords and rent them to local businesses
