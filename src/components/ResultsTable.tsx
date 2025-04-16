@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Globe, Check, X } from "lucide-react";
@@ -140,7 +141,7 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
   };
   
   const handleDomainAction = (domain: string) => {
-    const affiliateBaseUrl = "https://namecheap.pxf.io/nVdZx";
+    const affiliateUrl = "https://namecheap.pxf.io/nVdZx";
 
     toast({
       title: "Domain Registration",
@@ -149,7 +150,7 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
     });
 
     setTimeout(() => {
-      const newWindow = window.open(affiliateBaseUrl, "_blank");
+      const newWindow = window.open(affiliateUrl, "_blank");
       
       if (newWindow) {
         newWindow.focus();
@@ -171,7 +172,7 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => window.open("https://namecheap.pxf.io/nVdZx", "_blank")}
+          onClick={() => handleDomainAction(result.exactMatchDomain)}
           className="border-brand-from text-brand-from hover:bg-brand-gradient hover:text-white transition-all"
         >
           <Globe className="mr-1 h-3 w-3" />
