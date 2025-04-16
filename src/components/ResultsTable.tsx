@@ -28,24 +28,20 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const resultsPerPage = 10;
   
-  // Calculate pagination
   const totalPages = Math.ceil(results.length / resultsPerPage);
   const startIndex = (currentPage - 1) * resultsPerPage;
   const endIndex = startIndex + resultsPerPage;
   const currentResults = results.slice(startIndex, endIndex);
   
-  // Generate page numbers for pagination
   const getPageNumbers = () => {
     const pageNumbers = [];
     const maxPagesToShow = 5;
     
     if (totalPages <= maxPagesToShow) {
-      // Show all pages if total is less than max
       for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(i);
       }
     } else {
-      // Show limited pages with current page in middle if possible
       let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
       let endPage = startPage + maxPagesToShow - 1;
       
@@ -62,28 +58,23 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
     return pageNumbers;
   };
   
-  // Format numbers with commas
   const formatNumber = (num: number) => {
     return num.toLocaleString();
   };
   
-  // Format CPC as currency
   const formatCpc = (cpc: number) => {
     return `$${cpc.toFixed(2)}`;
   };
   
-  // For our mock data, generate domain status if it doesn't exist yet
   const ensureDomainStatus = (result: KeywordResult) => {
-    // If the domainStatus doesn't exist, create it based on domainAvailable
     if (!result.domainStatus) {
       result.domainStatus = {
         com: result.domainAvailable,
-        net: Math.random() > 0.4, // Random availability for net
-        org: Math.random() > 0.5, // Random availability for org
+        net: Math.random() > 0.4,
+        org: Math.random() > 0.5,
       };
     }
     
-    // If domainLinks doesn't exist, create it based on domainLink
     if (!result.domainLinks) {
       result.domainLinks = {
         com: result.domainAvailable ? result.domainLink : null,
@@ -95,7 +86,6 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
     return result;
   };
   
-  // Render domain status check or X with extension
   const renderDomainStatus = (available: boolean, extension: string) => {
     if (available) {
       return (
@@ -114,20 +104,23 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
     }
   };
   
-  // Handle affiliate link and domain check with two-step redirect
   const handleDomainAction = (domainLink: string | null) => {
-    if (!domainLink) return;
+    console.log('Domain action triggered', domainLink);
     
-    // Step 1: Open the affiliate link in a new tab
+    if (!domainLink) {
+      console.log('No domain link provided, action cancelled');
+      return;
+    }
+    
+    console.log('Opening affiliate link: https://namecheap.pxf.io/nVdZx');
     window.open("https://namecheap.pxf.io/nVdZx", "_blank");
     
-    // Step 2: Open the actual domain page in another tab
     setTimeout(() => {
+      console.log('Opening domain link after 500ms:', domainLink);
       window.open(domainLink, "_blank");
-    }, 500); // Short delay to ensure both tabs open properly
+    }, 500);
   };
   
-  // Render registration button for a specific extension
   const renderDomainAction = (result: KeywordResult, extension: keyof typeof result.domainStatus) => {
     const available = result.domainStatus[extension];
     const link = result.domainLinks[extension];
