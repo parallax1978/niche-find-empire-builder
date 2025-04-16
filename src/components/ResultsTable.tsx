@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -14,11 +14,11 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-  PaginationEllipsis,
 } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { KeywordResult } from "@/types";
 import { Check, Globe, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface ResultsTableProps {
   results: KeywordResult[];
@@ -26,12 +26,47 @@ interface ResultsTableProps {
 
 const ResultsTable = ({ results }: ResultsTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [recentAction, setRecentAction] = useState<string | null>(null);
   const resultsPerPage = 10;
+  const { toast } = useToast();
   
   const totalPages = Math.ceil(results.length / resultsPerPage);
   const startIndex = (currentPage - 1) * resultsPerPage;
   const endIndex = startIndex + resultsPerPage;
   const currentResults = results.slice(startIndex, endIndex);
+  
+  useEffect(() => {
+    const checkStoredAction = () => {
+      const storedAction = localStorage.getItem('domainAction');
+      if (storedAction) {
+        localStorage.removeItem('domainAction');
+        
+        try {
+          const actionData = JSON.parse(storedAction);
+          const { domain, timestamp } = actionData;
+          
+          const now = new Date().getTime();
+          if (now - timestamp < 10000) {
+            setRecentAction(domain);
+            toast({
+              title: "Domain registration initiated",
+              description: `You've been redirected to register ${domain}`,
+              variant: "default",
+            });
+            
+            setTimeout(() => setRecentAction(null), 5000);
+          }
+        } catch (e) {
+          console.error("Error parsing stored domain action", e);
+        }
+      }
+    };
+    
+    checkStoredAction();
+    const interval = setInterval(checkStoredAction, 1000);
+    
+    return () => clearInterval(interval);
+  }, [toast]);
   
   const getPageNumbers = () => {
     const pageNumbers = [];
@@ -104,19 +139,31 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
     }
   };
   
-  const handleDomainAction = (domainLink: string | null) => {
-    console.log('Domain action triggered', domainLink);
-    
+  const handleDomainAction = (domainLink: string | null, domain: string) => {
     if (!domainLink) {
-      console.log('No domain link provided, action cancelled');
+      toast({
+        title: "Action cancelled",
+        description: "No domain link provided",
+        variant: "destructive",
+      });
       return;
     }
     
-    console.log('Opening affiliate link: https://namecheap.pxf.io/nVdZx');
+    const actionData = {
+      domain: domain,
+      timestamp: new Date().getTime()
+    };
+    localStorage.setItem('domainAction', JSON.stringify(actionData));
+    
+    toast({
+      title: "Opening domain registrar",
+      description: `Preparing to register ${domain}...`,
+      variant: "default",
+    });
+    
     window.open("https://namecheap.pxf.io/nVdZx", "_blank");
     
     setTimeout(() => {
-      console.log('Opening domain link after 500ms:', domainLink);
       window.open(domainLink, "_blank");
     }, 500);
   };
@@ -124,14 +171,17 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
   const renderDomainAction = (result: KeywordResult, extension: keyof typeof result.domainStatus) => {
     const available = result.domainStatus[extension];
     const link = result.domainLinks[extension];
+    const domain = `${result.exactMatchDomain}.${extension}`;
     
     if (available && link) {
+      const isRecent = recentAction === domain;
+      
       return (
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleDomainAction(link)}
-          className="border-brand-from text-brand-from hover:bg-brand-gradient hover:text-white transition-all"
+          onClick={() => handleDomainAction(link, domain)}
+          className={`border-brand-from text-brand-from hover:bg-brand-gradient hover:text-white transition-all ${isRecent ? 'bg-green-50' : ''}`}
         >
           <Globe className="mr-1 h-3 w-3" />
           {extension}
