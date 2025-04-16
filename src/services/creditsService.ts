@@ -25,8 +25,10 @@ export interface Purchase {
 // Get user credits
 export const getUserCredits = async (): Promise<number> => {
   try {
-    const { data, error } = await supabase
-      .from('user_credits')
+    // Use type assertion to work around TypeScript limitations 
+    // until the generated types are updated
+    const { data, error } = await (supabase
+      .from('user_credits') as any)
       .select('credits')
       .single();
 
@@ -49,8 +51,9 @@ export const getUserCredits = async (): Promise<number> => {
 // Get user purchase history
 export const getPurchaseHistory = async (): Promise<Purchase[]> => {
   try {
-    const { data, error } = await supabase
-      .from('purchases')
+    // Use type assertion to work around TypeScript limitations
+    const { data, error } = await (supabase
+      .from('purchases') as any)
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -114,8 +117,8 @@ export const useCreditsForSearch = async (keywordResults: number): Promise<boole
 
   try {
     // Update user credits
-    const { error } = await supabase
-      .from('user_credits')
+    const { error } = await (supabase
+      .from('user_credits') as any)
       .update({ credits: currentCredits - keywordResults })
       .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
 
@@ -144,11 +147,12 @@ export const useCreditsForSearch = async (keywordResults: number): Promise<boole
 // Record search usage
 export const recordSearchUsage = async (keyword: string, resultsCount: number): Promise<void> => {
   try {
-    const { error } = await supabase
-      .from('search_usage')
+    const { error } = await (supabase
+      .from('search_usage') as any)
       .insert({
         keyword,
         results_count: resultsCount,
+        user_id: (await supabase.auth.getUser()).data.user?.id
       });
 
     if (error) {
@@ -162,8 +166,8 @@ export const recordSearchUsage = async (keyword: string, resultsCount: number): 
 // Verify payment success from URL parameter
 export const verifyPaymentSuccess = async (sessionId: string): Promise<boolean> => {
   try {
-    const { data, error } = await supabase
-      .from('purchases')
+    const { data, error } = await (supabase
+      .from('purchases') as any)
       .select('status')
       .eq('stripe_session_id', sessionId)
       .single();
