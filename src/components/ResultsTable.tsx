@@ -1,8 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Globe } from "lucide-react";
+import { Globe, Check, X } from "lucide-react";
 import { KeywordResult } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious
+} from "@/components/ui/pagination";
 
 interface ResultsTableProps {
   results: KeywordResult[];
