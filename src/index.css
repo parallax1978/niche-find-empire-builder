@@ -49,6 +49,10 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Brand gradient variables */
+    --brand-from: #8711c5;
+    --brand-to: #0071c5;
   }
 
   .dark {
