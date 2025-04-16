@@ -2,13 +2,13 @@
 import { Link } from "react-router-dom";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, Settings, ArrowRight, Globe, DollarSign, Users } from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="relative bg-white text-gray-900">
+      <div className="relative bg-[#F8FAFC] text-gray-900">
         <Container>
           <div className="py-16 md:py-24">
             <div className="text-center max-w-3xl mx-auto">
