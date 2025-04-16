@@ -109,7 +109,7 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
   }
 };
 
-// Check if a domain is available using our edge function
+// Check if a domain is available using the Namecheap API via our edge function
 export const checkDomainAvailability = async (domain: string): Promise<{ 
   available: boolean, 
   premiumDomain?: boolean,
@@ -145,7 +145,7 @@ export const checkDomainAvailability = async (domain: string): Promise<{
     }
 
     if (data.error) {
-      console.error(`Error from edge function: ${data.error}`);
+      console.error(`Error from edge function: ${data.errorMessage || data.error}`);
       
       // For debugging: if we have detailed error info, log it
       if (data.details) {
@@ -155,16 +155,7 @@ export const checkDomainAvailability = async (domain: string): Promise<{
       // Return unavailable with the specific error message
       return {
         available: false,
-        errorMessage: data.error
-      };
-    }
-
-    // If we got an error message in the response, include it
-    if (data.errorMessage) {
-      console.error(`Error message from response: ${data.errorMessage}`);
-      return {
-        available: false,
-        errorMessage: data.errorMessage
+        errorMessage: data.errorMessage || data.error
       };
     }
 

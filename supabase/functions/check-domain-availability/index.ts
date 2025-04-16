@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // CORS headers for cross-origin requests
@@ -25,14 +26,14 @@ serve(async (req) => {
   try {
     // Get API credentials from Supabase secrets
     const apiKey = Deno.env.get('NAMECHEAP_API_KEY');
-    const clientIpsString = Deno.env.get('NAMECHEAP_CLIENT_IP');
     const username = Deno.env.get('NAMECHEAP_USERNAME');
+    const clientIpsString = Deno.env.get('NAMECHEAP_CLIENT_IP');
 
-    if (!apiKey || !clientIpsString || !username) {
+    if (!apiKey || !username || !clientIpsString) {
       console.error('Missing required Namecheap API credentials', { 
         hasApiKey: !!apiKey, 
-        hasClientIp: !!clientIpsString, 
-        hasUsername: !!username 
+        hasUsername: !!username,
+        hasClientIp: !!clientIpsString 
       });
       
       throw new Error('Missing required API credentials');
@@ -105,11 +106,22 @@ serve(async (req) => {
 
         // Call Namecheap API with a timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
         
         const response = await fetch(apiUrl.toString(), {
           signal: controller.signal
         }).finally(() => clearTimeout(timeoutId));
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`HTTP error with IP ${clientIp}: ${response.status} - ${errorText.substring(0, 500)}`);
+          errorResponses.push({ 
+            ip: clientIp, 
+            status: response.status, 
+            error: errorText.substring(0, 500) 
+          });
+          continue; // Try next IP
+        }
         
         const xmlText = await response.text();
         console.log(`Response from IP ${clientIp}: Status ${response.status}, Body length: ${xmlText.length}`);
@@ -121,11 +133,11 @@ serve(async (req) => {
         // Check for API errors using regex
         const errorMatch = xmlText.match(/<Error Number="([^"]+)">([^<]+)<\/Error>/);
         
-        if (!response.ok || errorMatch) {
-          const errorNumber = errorMatch ? errorMatch[1] : 'unknown';
-          const errorMessage = errorMatch ? errorMatch[2] : `HTTP ${response.status}: ${response.statusText}`;
+        if (errorMatch) {
+          const errorNumber = errorMatch[1];
+          const errorMessage = errorMatch[2];
           
-          console.error(`Error with IP ${clientIp}: ${errorNumber} - ${errorMessage}`);
+          console.error(`API error with IP ${clientIp}: ${errorNumber} - ${errorMessage}`);
           errorResponses.push({ ip: clientIp, errorNumber, errorMessage });
           continue; // Try next IP
         }
@@ -142,8 +154,22 @@ serve(async (req) => {
     
     // If all IPs failed, return an error
     if (!apiResponse) {
-      console.error("All authorized IPs failed:", errorResponses);
-      throw new Error("IP validation failed with Namecheap API");
+      console.error("All authorized IPs failed:", JSON.stringify(errorResponses));
+      
+      // Return a structured error response
+      return new Response(
+        JSON.stringify({ 
+          available: false,
+          premiumDomain: false,
+          error: true,
+          errorMessage: "Failed to check domain availability with Namecheap API",
+          details: errorResponses
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
     
     const xmlText = apiResponse;
@@ -154,7 +180,18 @@ serve(async (req) => {
     
     if (!availabilityMatch) {
       console.error("Unable to parse domain check result from API response");
-      throw new Error("Failed to parse API response");
+      return new Response(
+        JSON.stringify({ 
+          available: false,
+          premiumDomain: false,
+          error: true,
+          errorMessage: "Failed to parse API response"
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
     
     const available = availabilityMatch[1].toLowerCase() === "true";
@@ -170,20 +207,12 @@ serve(async (req) => {
     const renewalPriceMatch = xmlText.match(/PremiumRenewalPrice="([^"]+)"/);
     const renewalPrice = renewalPriceMatch ? renewalPriceMatch[1] : null;
     
-    const transferPriceMatch = xmlText.match(/PremiumTransferPrice="([^"]+)"/);
-    const transferPrice = transferPriceMatch ? transferPriceMatch[1] : null;
-    
-    const restorePriceMatch = xmlText.match(/PremiumRestorePrice="([^"]+)"/);
-    const restorePrice = restorePriceMatch ? restorePriceMatch[1] : null;
-    
     const result = {
       domain: `${sld}.${tld}`,
       available,
       premiumDomain,
       purchasePrice,
-      renewalPrice,
-      transferPrice,
-      restorePrice,
+      renewalPrice
     };
     
     console.log(`Domain availability result:`, result);
@@ -197,6 +226,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in check-domain-availability function:", error);
     
+    // Return a more structured error response
     return new Response(
       JSON.stringify({ 
         available: false,
@@ -204,7 +234,8 @@ serve(async (req) => {
         purchasePrice: null,
         renewalPrice: null,
         error: true,
-        errorMessage: error.message || "Unknown error"
+        errorMessage: error.message || "Unknown error",
+        stack: error.stack
       }),
       { 
         status: 500,
