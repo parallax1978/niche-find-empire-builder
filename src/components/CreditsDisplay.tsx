@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,7 +41,7 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
   const handlePurchaseBasePackage = async () => {
     setIsPurchasing(true);
     try {
-      const response = await initiateCheckout('base');
+      const response = await initiateCheckout('price_YOUR_BASE_PACKAGE_PRICE_ID');
       if (response?.sessionUrl) {
         window.location.href = response.sessionUrl;
       } else {
@@ -67,7 +66,7 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
   const handlePurchaseAdditionalCredits = async (quantity: number) => {
     setIsPurchasing(true);
     try {
-      const response = await initiateCheckout('additional', quantity);
+      const response = await initiateCheckout('price_YOUR_ADDITIONAL_CREDITS_PRICE_ID', quantity);
       if (response?.sessionUrl) {
         window.location.href = response.sessionUrl;
       } else {

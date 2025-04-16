@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -70,11 +69,8 @@ export const getPurchaseHistory = async (): Promise<Purchase[]> => {
 };
 
 // Initialize checkout for purchasing credits
-export const initiateCheckout = async (packageType: 'base' | 'additional', quantity: number = 1) => {
+export const initiateCheckout = async (priceId: string, quantity: number = 1) => {
   try {
-    // The priceId will be mapped to your Stripe prices
-    const priceId = packageType === 'base' ? 'base-package' : 'additional-credits';
-
     const { data, error } = await supabase.functions.invoke('create-checkout', {
       body: { priceId, quantity },
     });

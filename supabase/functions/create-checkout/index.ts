@@ -59,12 +59,16 @@ serve(async (req) => {
       );
     }
 
+    // Map the package type to the actual Stripe price ID
+    // You'll need to replace these with your actual Stripe price IDs
+    const stripePriceId = priceId;
+
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
         {
-          price: priceId,
+          price: stripePriceId,
           quantity: quantity,
         },
       ],
