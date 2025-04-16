@@ -26,8 +26,8 @@ interface ResultsTableProps {
 
 const ResultsTable = ({ results }: ResultsTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [recentAction, setRecentAction] = useState<string | null>(null);
   const resultsPerPage = 10;
+  const [recentAction, setRecentAction] = useState<string | null>(null);
   const { toast } = useToast();
   
   const totalPages = Math.ceil(results.length / resultsPerPage);
@@ -139,49 +139,27 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
     }
   };
   
-  const handleDomainAction = (domainLink: string | null, domain: string) => {
-    if (!domainLink) {
-      toast({
-        title: "Action cancelled",
-        description: "No domain link provided",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const actionData = {
-      domain: domain,
-      timestamp: new Date().getTime()
-    };
-    localStorage.setItem('domainAction', JSON.stringify(actionData));
-    
+  const handleDomainAction = (domain: string) => {
     toast({
-      title: "Opening domain registrar",
-      description: `Preparing to register ${domain}...`,
+      title: "Affiliate link opened",
+      description: `Search for ${domain} on Namecheap to register it`,
       variant: "default",
     });
     
     window.open("https://namecheap.pxf.io/nVdZx", "_blank");
-    
-    setTimeout(() => {
-      window.open(domainLink, "_blank");
-    }, 500);
   };
   
   const renderDomainAction = (result: KeywordResult, extension: keyof typeof result.domainStatus) => {
     const available = result.domainStatus[extension];
-    const link = result.domainLinks[extension];
     const domain = `${result.exactMatchDomain}.${extension}`;
     
-    if (available && link) {
-      const isRecent = recentAction === domain;
-      
+    if (available) {
       return (
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleDomainAction(link, domain)}
-          className={`border-brand-from text-brand-from hover:bg-brand-gradient hover:text-white transition-all ${isRecent ? 'bg-green-50' : ''}`}
+          onClick={() => handleDomainAction(domain)}
+          className="border-brand-from text-brand-from hover:bg-brand-gradient hover:text-white transition-all"
         >
           <Globe className="mr-1 h-3 w-3" />
           {extension}
