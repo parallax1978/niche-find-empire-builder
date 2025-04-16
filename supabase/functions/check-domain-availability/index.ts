@@ -17,13 +17,14 @@ serve(async (req) => {
     // Get API credentials from Supabase secrets
     const apiKey = Deno.env.get('NAMECHEAP_API_KEY');
     const username = Deno.env.get('NAMECHEAP_USERNAME');
-    const clientIp = Deno.env.get('NAMECHEAP_CLIENT_IP');
+    
+    // IMPORTANT: Use this exact IP address that's been whitelisted
+    const clientIp = "199.193.6.185"; // Hardcoded whitelist IP
 
-    if (!apiKey || !username || !clientIp) {
+    if (!apiKey || !username) {
       console.error('Missing required Namecheap API credentials', { 
         hasApiKey: !!apiKey, 
-        hasUsername: !!username,
-        hasClientIp: !!clientIp 
+        hasUsername: !!username
       });
       
       return new Response(
@@ -69,13 +70,13 @@ serve(async (req) => {
       tld = 'com';
     }
 
-    // Build Namecheap API URL with the correct client IP
+    // Build Namecheap API URL with the hardcoded client IP
     const apiUrl = new URL('https://api.namecheap.com/xml.response');
     const params = {
       ApiUser: username,
       ApiKey: apiKey,
       UserName: username,
-      ClientIp: clientIp,
+      ClientIp: clientIp, // Using the hardcoded IP that's been whitelisted
       Command: 'namecheap.domains.check',
       SLD: sld,
       TLD: tld
