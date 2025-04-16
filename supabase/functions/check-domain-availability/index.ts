@@ -8,16 +8,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Log incoming request details
-  console.log('Request headers:', Object.fromEntries(req.headers.entries()));
-  
-  // Try to get the real client IP from various headers
-  const clientIp = req.headers.get('cf-connecting-ip') || 
-                   req.headers.get('x-forwarded-for')?.split(',')[0] || 
-                   req.headers.get('x-real-ip');
-                   
-  console.log('Detected Client IP:', clientIp);
-
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -27,16 +17,27 @@ serve(async (req) => {
     // Get API credentials from Supabase secrets
     const apiKey = Deno.env.get('NAMECHEAP_API_KEY');
     const username = Deno.env.get('NAMECHEAP_USERNAME');
-    const clientIpsString = Deno.env.get('NAMECHEAP_CLIENT_IP');
+    const clientIp = Deno.env.get('NAMECHEAP_CLIENT_IP');
 
-    if (!apiKey || !username || !clientIpsString) {
+    if (!apiKey || !username || !clientIp) {
       console.error('Missing required Namecheap API credentials', { 
         hasApiKey: !!apiKey, 
         hasUsername: !!username,
-        hasClientIp: !!clientIpsString 
+        hasClientIp: !!clientIp 
       });
       
-      throw new Error('Missing required API credentials');
+      return new Response(
+        JSON.stringify({ 
+          error: true, 
+          errorMessage: 'Missing required API credentials in environment variables',
+          available: false,
+          premiumDomain: false
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     // Parse request body to get the domain to check
@@ -70,100 +71,45 @@ serve(async (req) => {
       tld = 'com';
     }
 
-    // Get the list of authorized IPs from the secret
-    const authorizedIps = clientIpsString.split(',').map(ip => ip.trim());
-    console.log(`Authorized IPs (${authorizedIps.length}):`, authorizedIps);
+    // Build Namecheap API URL with the correct client IP
+    const apiUrl = new URL('https://api.namecheap.com/xml.response');
+    const params = {
+      ApiUser: username,
+      ApiKey: apiKey,
+      UserName: username,
+      ClientIp: clientIp,
+      Command: 'namecheap.domains.check',
+      SLD: sld,
+      TLD: tld
+    };
     
-    // Try to call the Namecheap API
-    let apiResponse = null;
-    let errorResponses = [];
+    // Add parameters to URL
+    Object.entries(params).forEach(([key, value]) => {
+      apiUrl.searchParams.append(key, value.toString());
+    });
 
-    for (let i = 0; i < authorizedIps.length && !apiResponse; i++) {
-      const clientIp = authorizedIps[i];
-      console.log(`Attempt ${i+1}: Trying with client IP: ${clientIp}`);
-      
-      try {
-        // Build Namecheap API URL
-        const apiUrl = new URL('https://api.namecheap.com/xml.response');
-        const params = {
-          ApiUser: username,
-          ApiKey: apiKey,
-          UserName: username,
-          ClientIp: clientIp,
-          Command: 'namecheap.domains.check',
-          SLD: sld,
-          TLD: tld
-        };
-        
-        // Add parameters to URL
-        Object.entries(params).forEach(([key, value]) => {
-          apiUrl.searchParams.append(key, value.toString());
-        });
+    // Log the API URL with sensitive parts masked
+    const debugApiUrl = apiUrl.toString().replace(apiKey, 'API_KEY_MASKED');
+    console.log(`Calling Namecheap API: ${debugApiUrl}`);
 
-        // Log the API URL with sensitive parts masked
-        const debugApiUrl = apiUrl.toString().replace(apiKey, 'API_KEY_MASKED');
-        console.log(`Calling Namecheap API with IP ${clientIp}: ${debugApiUrl}`);
-
-        // Call Namecheap API with a timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-        
-        const response = await fetch(apiUrl.toString(), {
-          signal: controller.signal
-        }).finally(() => clearTimeout(timeoutId));
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`HTTP error with IP ${clientIp}: ${response.status} - ${errorText.substring(0, 500)}`);
-          errorResponses.push({ 
-            ip: clientIp, 
-            status: response.status, 
-            error: errorText.substring(0, 500) 
-          });
-          continue; // Try next IP
-        }
-        
-        const xmlText = await response.text();
-        console.log(`Response from IP ${clientIp}: Status ${response.status}, Body length: ${xmlText.length}`);
-        
-        // Log a snippet of the response for debugging
-        const responsePreview = xmlText.substring(0, 500) + (xmlText.length > 500 ? '...' : '');
-        console.log(`Response preview: ${responsePreview}`);
-        
-        // Check for API errors using regex
-        const errorMatch = xmlText.match(/<Error Number="([^"]+)">([^<]+)<\/Error>/);
-        
-        if (errorMatch) {
-          const errorNumber = errorMatch[1];
-          const errorMessage = errorMatch[2];
-          
-          console.error(`API error with IP ${clientIp}: ${errorNumber} - ${errorMessage}`);
-          errorResponses.push({ ip: clientIp, errorNumber, errorMessage });
-          continue; // Try next IP
-        }
-        
-        // Success - store response and break the loop
-        apiResponse = xmlText;
-        console.log(`Successfully got response with IP ${clientIp}`);
-        break;
-      } catch (err) {
-        console.error(`Exception with IP ${clientIp}:`, err.message);
-        errorResponses.push({ ip: clientIp, error: err.message });
-      }
-    }
+    // Call Namecheap API with a timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    // If all IPs failed, return an error
-    if (!apiResponse) {
-      console.error("All authorized IPs failed:", JSON.stringify(errorResponses));
+    const response = await fetch(apiUrl.toString(), {
+      signal: controller.signal
+    }).finally(() => clearTimeout(timeoutId));
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`HTTP error: ${response.status} - ${errorText.substring(0, 500)}`);
       
-      // Return a structured error response
       return new Response(
         JSON.stringify({ 
           available: false,
           premiumDomain: false,
           error: true,
-          errorMessage: "Failed to check domain availability with Namecheap API",
-          details: errorResponses
+          errorMessage: `API returned status ${response.status}: ${errorText.substring(0, 100)}`
         }),
         { 
           status: 500,
@@ -172,8 +118,35 @@ serve(async (req) => {
       );
     }
     
-    const xmlText = apiResponse;
-    console.log("Processing successful API response");
+    const xmlText = await response.text();
+    console.log(`Response status: ${response.status}, Body length: ${xmlText.length}`);
+    
+    // Log a snippet of the response for debugging
+    const responsePreview = xmlText.substring(0, 500) + (xmlText.length > 500 ? '...' : '');
+    console.log(`Response preview: ${responsePreview}`);
+    
+    // Check for API errors using regex
+    const errorMatch = xmlText.match(/<Error Number="([^"]+)">([^<]+)<\/Error>/);
+    
+    if (errorMatch) {
+      const errorNumber = errorMatch[1];
+      const errorMessage = errorMatch[2];
+      
+      console.error(`API error: ${errorNumber} - ${errorMessage}`);
+      
+      return new Response(
+        JSON.stringify({ 
+          available: false,
+          premiumDomain: false,
+          error: true,
+          errorMessage: `Namecheap API error (${errorNumber}): ${errorMessage}`
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
     
     // Extract domain availability information using regex
     const availabilityMatch = xmlText.match(/<DomainCheckResult Domain="[^"]+" Available="([^"]+)"/);
@@ -226,7 +199,6 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in check-domain-availability function:", error);
     
-    // Return a more structured error response
     return new Response(
       JSON.stringify({ 
         available: false,

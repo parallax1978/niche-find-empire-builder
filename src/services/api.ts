@@ -147,15 +147,10 @@ export const checkDomainAvailability = async (domain: string): Promise<{
     if (data.error) {
       console.error(`Error from edge function: ${data.errorMessage || data.error}`);
       
-      // For debugging: if we have detailed error info, log it
-      if (data.details) {
-        console.error('Error details:', data.details);
-      }
-      
       // Return unavailable with the specific error message
       return {
         available: false,
-        errorMessage: data.errorMessage || data.error
+        errorMessage: data.errorMessage || 'Error checking domain availability'
       };
     }
 
