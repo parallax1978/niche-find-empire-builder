@@ -1,23 +1,7 @@
-import { useState, useEffect } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Globe } from "lucide-react";
 import { KeywordResult } from "@/types";
-import { Check, Globe, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ResultsTableProps {
@@ -140,13 +124,16 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
   };
   
   const handleDomainAction = (domain: string) => {
+    const affiliateBaseUrl = "https://namecheap.pxf.io/nVdZx";
+    const trackingUrl = `${affiliateBaseUrl}?domain=${encodeURIComponent(domain)}`;
+
     toast({
-      title: "Affiliate link opened",
-      description: `Search for ${domain} on Namecheap to register it`,
+      title: "Domain Registration",
+      description: `Opening Namecheap to register ${domain}. Please complete your registration.`,
       variant: "default",
     });
-    
-    window.open("https://namecheap.pxf.io/nVdZx", "_blank");
+
+    window.open(trackingUrl, "_blank", "noopener,noreferrer");
   };
   
   const renderDomainAction = (result: KeywordResult, extension: keyof typeof result.domainStatus) => {
