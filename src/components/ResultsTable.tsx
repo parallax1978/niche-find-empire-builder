@@ -140,24 +140,16 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
   };
   
   const handleDomainAction = (domain: string) => {
-    const actionData = {
-      domain,
-      timestamp: new Date().getTime()
-    };
-    localStorage.setItem('domainAction', JSON.stringify(actionData));
-    
-    const namecheapDomainUrl = `https://www.namecheap.com/domains/registration/results/?domain=${encodeURIComponent(domain)}`;
     const affiliateBaseUrl = "https://namecheap.pxf.io/nVdZx";
-    const fullAffiliateUrl = `${affiliateBaseUrl}?u=${encodeURIComponent(namecheapDomainUrl)}`;
 
     toast({
       title: "Domain Registration",
-      description: `Opening Namecheap to register ${domain}. Please complete your registration.`,
+      description: `Opening Namecheap to register domains. Please complete your registration.`,
       variant: "default",
     });
 
     setTimeout(() => {
-      const newWindow = window.open(fullAffiliateUrl, "_blank");
+      const newWindow = window.open(affiliateBaseUrl, "_blank");
       
       if (newWindow) {
         newWindow.focus();
