@@ -1,7 +1,7 @@
 
 import React, { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Search } from "lucide-react";
+import { Home, Search, Compass } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const AppLayout = ({ children }: AppLayoutProps) => {
@@ -19,8 +19,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             <div className="flex items-center">
               <Link 
                 to="/" 
-                className="text-xl font-bold bg-brand-gradient bg-clip-text text-transparent mr-8 hover:opacity-80 transition-opacity"
+                className="text-xl font-bold bg-brand-gradient bg-clip-text text-transparent mr-8 hover:opacity-80 transition-opacity flex items-center gap-2"
               >
+                <Compass className="h-6 w-6 text-[#5414C2]" />
                 Rank & Rent Finder
               </Link>
             </div>
