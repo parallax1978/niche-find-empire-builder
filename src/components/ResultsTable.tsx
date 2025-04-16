@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Table,
@@ -115,6 +114,19 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
     }
   };
   
+  // Handle affiliate link and domain check with two-step redirect
+  const handleDomainAction = (domainLink: string | null) => {
+    if (!domainLink) return;
+    
+    // Step 1: Open the affiliate link in a new tab
+    window.open("https://namecheap.pxf.io/nVdZx", "_blank");
+    
+    // Step 2: Open the actual domain page in another tab
+    setTimeout(() => {
+      window.open(domainLink, "_blank");
+    }, 500); // Short delay to ensure both tabs open properly
+  };
+  
   // Render registration button for a specific extension
   const renderDomainAction = (result: KeywordResult, extension: keyof typeof result.domainStatus) => {
     const available = result.domainStatus[extension];
@@ -125,7 +137,7 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => window.open(link, "_blank")}
+          onClick={() => handleDomainAction(link)}
           className="border-brand-from text-brand-from hover:bg-brand-gradient hover:text-white transition-all"
         >
           <Globe className="mr-1 h-3 w-3" />
