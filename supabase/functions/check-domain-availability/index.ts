@@ -21,6 +21,8 @@ serve(async (req) => {
     // IMPORTANT: Use this exact IP address that's been whitelisted
     const clientIp = "199.193.6.185"; // Hardcoded whitelist IP
 
+    console.log(`Using clientIp: ${clientIp}`);
+
     if (!apiKey || !username) {
       console.error('Missing required Namecheap API credentials', { 
         hasApiKey: !!apiKey, 
