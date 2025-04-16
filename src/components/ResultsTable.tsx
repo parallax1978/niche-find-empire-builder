@@ -140,8 +140,15 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
   };
   
   const handleDomainAction = (domain: string) => {
+    const actionData = {
+      domain,
+      timestamp: new Date().getTime()
+    };
+    localStorage.setItem('domainAction', JSON.stringify(actionData));
+    
+    const namecheapDomainUrl = `https://www.namecheap.com/domains/registration/results/?domain=${encodeURIComponent(domain)}`;
     const affiliateBaseUrl = "https://namecheap.pxf.io/nVdZx";
-    const trackingUrl = `${affiliateBaseUrl}?domain=${encodeURIComponent(domain)}`;
+    const fullAffiliateUrl = `${affiliateBaseUrl}?u=${encodeURIComponent(namecheapDomainUrl)}`;
 
     toast({
       title: "Domain Registration",
@@ -149,7 +156,19 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
       variant: "default",
     });
 
-    window.open(trackingUrl, "_blank", "noopener,noreferrer");
+    setTimeout(() => {
+      const newWindow = window.open(fullAffiliateUrl, "_blank");
+      
+      if (newWindow) {
+        newWindow.focus();
+      } else {
+        toast({
+          title: "Popup Blocked",
+          description: "Please allow popups for this site to open the domain registration page.",
+          variant: "destructive",
+        });
+      }
+    }, 100);
   };
   
   const renderDomainAction = (result: KeywordResult, extension: keyof typeof result.domainStatus) => {
