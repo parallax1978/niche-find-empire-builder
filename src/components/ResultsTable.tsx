@@ -140,16 +140,12 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
   };
   
   const handleDomainAction = (domain: string) => {
-    const encodedDomain = encodeURIComponent(domain);
-    
-    const namecheapDomainUrl = `https://www.namecheap.com/domains/registration/results/?domain=${encodedDomain}`;
-    
-    const affiliateBaseUrl = "https://namecheap.pxf.io/c/3645380/386170/5618";
-    const trackingUrl = `${affiliateBaseUrl}?u=${encodeURIComponent(namecheapDomainUrl)}`;
-    
+    const affiliateBaseUrl = "https://namecheap.pxf.io/nVdZx";
+    const trackingUrl = `${affiliateBaseUrl}?domain=${encodeURIComponent(domain)}`;
+
     toast({
       title: "Domain Registration",
-      description: `Opening Namecheap to register ${domain}. You'll be taken directly to the registration page.`,
+      description: `Opening Namecheap to register ${domain}. Please complete your registration.`,
       variant: "default",
     });
 
