@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Globe, Check, X } from "lucide-react";
@@ -149,19 +148,7 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
       variant: "default",
     });
 
-    setTimeout(() => {
-      const newWindow = window.open(affiliateUrl, "_blank");
-      
-      if (newWindow) {
-        newWindow.focus();
-      } else {
-        toast({
-          title: "Popup Blocked",
-          description: "Please allow popups for this site to open the domain registration page.",
-          variant: "destructive",
-        });
-      }
-    }, 100);
+    window.open(affiliateUrl, "_blank", "noopener,noreferrer");
   };
   
   const renderDomainAction = (result: KeywordResult, extension: keyof typeof result.domainStatus) => {
