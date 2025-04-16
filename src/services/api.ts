@@ -109,7 +109,7 @@ const fetchKeywordData = async (keyword: string): Promise<{ searchVolume: number
   }
 };
 
-// Check if a domain is available using the Namecheap API via our edge function
+// Check if a domain is available using the GoDaddy API via our edge function
 export const checkDomainAvailability = async (domain: string): Promise<{ 
   available: boolean, 
   premiumDomain?: boolean,

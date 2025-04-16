@@ -15,24 +15,21 @@ serve(async (req) => {
 
   try {
     // Get API credentials from Supabase secrets
-    const apiKey = Deno.env.get('NAMECHEAP_API_KEY');
-    const username = Deno.env.get('NAMECHEAP_USERNAME');
-    
-    // IMPORTANT: Use this exact IP address that's been whitelisted
-    const clientIp = "199.193.6.185"; // Hardcoded whitelist IP
+    const apiKey = Deno.env.get('GODADDY_API_KEY');
+    const apiSecret = Deno.env.get('GODADDY_API_SECRET');
 
-    console.log(`Using clientIp: ${clientIp}`);
+    console.log(`Using GoDaddy API for domain availability check`);
 
-    if (!apiKey || !username) {
-      console.error('Missing required Namecheap API credentials', { 
+    if (!apiKey || !apiSecret) {
+      console.error('Missing required GoDaddy API credentials', { 
         hasApiKey: !!apiKey, 
-        hasUsername: !!username
+        hasApiSecret: !!apiSecret
       });
       
       return new Response(
         JSON.stringify({ 
           error: true,
-          errorMessage: 'Missing required Namecheap API credentials. Please check your Supabase secrets.'
+          errorMessage: 'Missing required GoDaddy API credentials. Please check your Supabase secrets.'
         }),
         { 
           status: 400,
@@ -59,45 +56,22 @@ serve(async (req) => {
 
     console.log(`Checking availability for domain: ${domain}`);
 
-    // Extract SLD (second-level domain) and TLD (top-level domain)
-    const domainParts = domain.split('.');
-    let sld, tld;
+    // Build GoDaddy API URL - for checking single domain
+    const apiUrl = `https://api.godaddy.com/v1/domains/available?domain=${encodeURIComponent(domain)}`;
     
-    if (domainParts.length >= 2) {
-      sld = domainParts.slice(0, -1).join('.');
-      tld = domainParts[domainParts.length - 1];
-    } else {
-      // Default to .com if no TLD specified
-      sld = domain;
-      tld = 'com';
-    }
+    console.log(`Calling GoDaddy API: ${apiUrl}`);
 
-    // Build Namecheap API URL with the hardcoded client IP
-    const apiUrl = new URL('https://api.namecheap.com/xml.response');
-    const params = {
-      ApiUser: username,
-      ApiKey: apiKey,
-      UserName: username,
-      ClientIp: clientIp, // Using the hardcoded IP that's been whitelisted
-      Command: 'namecheap.domains.check',
-      SLD: sld,
-      TLD: tld
-    };
-    
-    // Add parameters to URL
-    Object.entries(params).forEach(([key, value]) => {
-      apiUrl.searchParams.append(key, value.toString());
-    });
-
-    // Log the API URL with sensitive parts masked
-    const debugApiUrl = apiUrl.toString().replace(apiKey, 'API_KEY_MASKED');
-    console.log(`Calling Namecheap API: ${debugApiUrl}`);
-
-    // Call Namecheap API with a timeout
+    // Call GoDaddy API with a timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    const response = await fetch(apiUrl.toString(), {
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `sso-key ${apiKey}:${apiSecret}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       signal: controller.signal
     }).finally(() => clearTimeout(timeoutId));
     
@@ -113,7 +87,7 @@ serve(async (req) => {
         JSON.stringify({ 
           error: true,
           available: false,
-          errorMessage: `Namecheap API error: ${response.status} - ${errorText.substring(0, 100)}`
+          errorMessage: `GoDaddy API error: ${response.status} - ${errorText.substring(0, 100)}`
         }),
         { 
           status: 500,
@@ -122,40 +96,13 @@ serve(async (req) => {
       );
     }
     
-    const xmlText = await response.text();
-    console.log(`Response body length: ${xmlText.length}`);
+    const data = await response.json();
+    console.log(`Response data: ${JSON.stringify(data)}`);
     
-    // Log a snippet of the response for debugging
-    const responsePreview = xmlText.substring(0, 500) + (xmlText.length > 500 ? '...' : '');
-    console.log(`Response preview: ${responsePreview}`);
-    
-    // Check for API errors using regex
-    const errorMatch = xmlText.match(/<Error Number="([^"]+)">([^<]+)<\/Error>/);
-    
-    if (errorMatch) {
-      const errorNumber = errorMatch[1];
-      const errorMessage = errorMatch[2];
-      
-      console.error(`API error: ${errorNumber} - ${errorMessage}`);
-      
-      return new Response(
-        JSON.stringify({ 
-          error: true,
-          available: false,
-          errorMessage: `Namecheap API error: ${errorMessage}`
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-    
-    // Extract domain availability information using regex
-    const availabilityMatch = xmlText.match(/<DomainCheckResult Domain="[^"]+" Available="([^"]+)"/);
-    
-    if (!availabilityMatch) {
-      console.error("Unable to parse domain check result from API response");
+    // Extract domain availability information from JSON response
+    // GoDaddy API returns an object with available, domain, and price properties
+    if (!data || typeof data !== 'object') {
+      console.error("Invalid response format from GoDaddy API");
       
       return new Response(
         JSON.stringify({ 
@@ -170,23 +117,25 @@ serve(async (req) => {
       );
     }
     
-    const available = availabilityMatch[1].toLowerCase() === "true";
+    const available = !!data.available;
     
-    // Extract premium domain information if available
-    const isPremiumMatch = xmlText.match(/IsPremiumName="([^"]+)"/);
-    const premiumDomain = isPremiumMatch ? isPremiumMatch[1].toLowerCase() === "true" : false;
+    // GoDaddy uses a "price" property for all domains
+    // Premium domains will have a higher price but aren't explicitly marked as premium
+    const isPremium = data.price && data.price > 15; // Assuming domains over $15 are premium
+    const purchasePrice = data.price ? data.price.toString() : null;
     
-    // Extract premium pricing if available
-    const premiumPriceMatch = xmlText.match(/PremiumRegistrationPrice="([^"]+)"/);
-    const purchasePrice = premiumPriceMatch ? premiumPriceMatch[1] : null;
+    // GoDaddy doesn't provide renewal price in the availability check
+    // We'll use the same purchase price or null for renewal
+    const renewalPrice = purchasePrice;
     
-    const renewalPriceMatch = xmlText.match(/PremiumRenewalPrice="([^"]+)"/);
-    const renewalPrice = renewalPriceMatch ? renewalPriceMatch[1] : null;
+    // Extract TLD from domain for consistent response format
+    const domainParts = domain.split('.');
+    const tld = domainParts.length > 1 ? domainParts[domainParts.length - 1] : 'com';
     
     const result = {
-      domain: `${sld}.${tld}`,
+      domain: domain,
       available,
-      premiumDomain,
+      premiumDomain: isPremium,
       purchasePrice,
       renewalPrice,
       error: false
