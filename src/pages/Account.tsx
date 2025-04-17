@@ -19,11 +19,13 @@ const Account = () => {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [authChecked, setAuthChecked] = useState(false);
   const [loadingTimeout, setLoadingTimeout] = useState<boolean>(false);
+  const [authCheckFailed, setAuthCheckFailed] = useState<boolean>(false);
   const navigate = useNavigate();
   
   useEffect(() => {
     // Set a timeout to avoid infinite loading
     const timeoutId = setTimeout(() => {
+      console.log("Loading timeout triggered after 10 seconds");
       setLoadingTimeout(true);
     }, 10000); // 10 seconds timeout
     
@@ -41,28 +43,35 @@ const Account = () => {
           });
           setIsAuthenticated(false);
           setAuthChecked(true);
+          setAuthCheckFailed(true);
           setIsLoading(false);
-          navigate("/auth", { replace: true });
           return;
         }
         
         const isLoggedIn = !!data.user;
         console.log("Auth check complete, user logged in:", isLoggedIn);
-        setIsAuthenticated(isLoggedIn);
-        setAuthChecked(true);
         
         if (!isLoggedIn) {
+          console.log("User not logged in, redirecting to auth page");
+          setIsAuthenticated(false);
+          setAuthChecked(true);
           setIsLoading(false);
           navigate("/auth", { replace: true });
-        } else {
-          await loadData();
+          return;
         }
+        
+        // User is authenticated
+        setIsAuthenticated(true);
+        setAuthChecked(true);
+        
+        // Fetch account data
+        await loadData();
       } catch (err) {
         console.error("Unexpected error during auth check:", err);
         setAuthChecked(true);
         setIsAuthenticated(false);
+        setAuthCheckFailed(true);
         setIsLoading(false);
-        navigate("/auth", { replace: true });
       }
     };
     
@@ -71,13 +80,20 @@ const Account = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event);
       const isLoggedIn = !!session?.user;
-      setIsAuthenticated(isLoggedIn);
       
-      if (!isLoggedIn) {
-        setIsLoading(false);
-        navigate("/auth", { replace: true });
-      } else if (isLoggedIn && authChecked) {
-        loadData();
+      if (isLoggedIn !== isAuthenticated) {
+        console.log("Authentication state changed, updating UI");
+        setIsAuthenticated(isLoggedIn);
+        
+        if (!isLoggedIn && authChecked) {
+          setIsLoading(false);
+          navigate("/auth", { replace: true });
+        } else if (isLoggedIn && authChecked) {
+          // Use setTimeout to avoid immediate Supabase call in the callback
+          setTimeout(() => {
+            loadData();
+          }, 0);
+        }
       }
     });
 
@@ -85,15 +101,17 @@ const Account = () => {
       subscription.unsubscribe();
       clearTimeout(timeoutId);
     };
-  }, [navigate, authChecked]);
+  }, [navigate]);
   
   const loadData = async () => {
     console.log("Loading account data...");
     setIsLoading(true);
+    
     try {
       const purchaseHistory = await getPurchaseHistory();
       console.log("Purchase history loaded:", purchaseHistory);
       setPurchases(purchaseHistory);
+      setIsLoading(false);
     } catch (error) {
       console.error("Error loading account data:", error);
       toast({
@@ -101,7 +119,6 @@ const Account = () => {
         description: "Could not load your account data. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -133,6 +150,11 @@ const Account = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+  
+  const handleRefresh = () => {
+    console.log("Manual refresh initiated");
+    window.location.reload();
+  };
 
   // Show loading timeout message if loading takes too long
   if (loadingTimeout && isLoading) {
@@ -144,7 +166,25 @@ const Account = () => {
               <AlertCircle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
               <h1 className="text-2xl font-bold mb-4">Loading is taking longer than expected</h1>
               <p className="mb-6">There may be an issue with loading your account data.</p>
-              <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+              <Button onClick={handleRefresh}>Refresh Page</Button>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+  
+  // Show auth check failed message
+  if (authCheckFailed) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Container>
+          <div className="py-16 text-center">
+            <div className="max-w-md mx-auto">
+              <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold mb-4">Authentication Error</h1>
+              <p className="mb-6">We couldn't verify your account. Please try signing in again.</p>
+              <Button onClick={() => navigate("/auth", { replace: true })}>Go to Sign In</Button>
             </div>
           </div>
         </Container>
@@ -220,10 +260,23 @@ const Account = () => {
               <TabsContent value="purchases">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ReceiptText className="h-5 w-5 text-[#5414C2]" />
-                      Purchase History
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ReceiptText className="h-5 w-5 text-[#5414C2]" />
+                        <CardTitle>Purchase History</CardTitle>
+                      </div>
+                      {!isLoading && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={loadData}
+                          className="gap-1"
+                        >
+                          <RefreshCcw className="h-3.5 w-3.5" />
+                          Refresh
+                        </Button>
+                      )}
+                    </div>
                     <CardDescription>Your recent credit purchases</CardDescription>
                   </CardHeader>
                   <CardContent>

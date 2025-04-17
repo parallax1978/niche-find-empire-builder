@@ -59,6 +59,20 @@ serve(async (req) => {
 
         console.log(`Processing completed checkout for user: ${userId}, session: ${sessionId}`);
 
+        // Verify if this session was already processed
+        const { data: existingPurchases, error: queryError } = await supabaseAdmin
+          .from("purchases")
+          .select("id, status")
+          .eq("stripe_session_id", sessionId)
+          .eq("status", "completed");
+          
+        if (!queryError && existingPurchases?.length > 0) {
+          console.log(`This session ${sessionId} was already processed successfully. Skipping.`);
+          return new Response(JSON.stringify({ received: true, status: "already_processed" }), {
+            status: 200,
+          });
+        }
+
         // Get the purchase record
         const { data: purchaseData, error: purchaseError } = await supabaseAdmin
           .from("purchases")
@@ -122,6 +136,7 @@ serve(async (req) => {
               .update({
                 status: "completed",
                 stripe_payment_intent_id: session.payment_intent,
+                updated_at: new Date().toISOString()
               })
               .eq("id", purchaseData.id);
 
@@ -142,12 +157,29 @@ serve(async (req) => {
             .eq("user_id", userId)
             .single();
             
-          if (!userCredits || userCredits.credits < purchaseData.credits_purchased) {
-            console.log(`Adding ${purchaseData.credits_purchased} credits to user ${userId}`);
-            // Update user credits
+          if (!userCredits) {
+            console.log(`No user_credits record found, creating one with ${purchaseData.credits_purchased} credits`);
             await updateUserCredits(supabaseAdmin, userId, purchaseData.credits_purchased);
           } else {
-            console.log(`Credits already appear to be added for user ${userId}`);
+            // Check if we need to verify if the credits were added for this purchase
+            const { data: purchaseHistory } = await supabaseAdmin
+              .from("purchases")
+              .select("credits_purchased")
+              .eq("user_id", userId)
+              .eq("status", "completed");
+              
+            const totalPurchasedCredits = purchaseHistory?.reduce((sum, purchase) => 
+              sum + (purchase.credits_purchased || 0), 0) || 0;
+              
+            console.log(`User has ${userCredits.credits} credits, total purchased: ${totalPurchasedCredits}`);
+            
+            // If the user's credits seem too low compared to purchases, update them
+            if (totalPurchasedCredits > userCredits.credits) {
+              console.log(`Adding ${purchaseData.credits_purchased} credits to user ${userId}`);
+              await updateUserCredits(supabaseAdmin, userId, purchaseData.credits_purchased);
+            } else {
+              console.log(`Credits already appear to be added for user ${userId}`);
+            }
           }
         }
         
