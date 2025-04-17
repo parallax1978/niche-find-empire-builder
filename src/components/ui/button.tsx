@@ -44,13 +44,28 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, startIcon, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
+    
+    // When asChild is true, we need to handle the children differently
+    if (asChild) {
+      return (
+        <Comp
+          className={cn(buttonVariants({ variant, size, className }))}
+          ref={ref}
+          {...props}
+        >
+          {children}
+        </Comp>
+      )
+    }
+    
+    // Regular button with potential startIcon
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
       >
-        {startIcon && <span className="mr-2">{startIcon}</span>}
+        {startIcon}
         {children}
       </Comp>
     )

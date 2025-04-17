@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Container } from "@/components/ui/container";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -228,8 +229,8 @@ const Account = () => {
                           variant="outline" 
                           className="mt-4"
                           onClick={loadData}
-                          startIcon={<RefreshCcw className="h-4 w-4" />}
                         >
+                          <RefreshCcw className="h-4 w-4 mr-2" />
                           Refresh History
                         </Button>
                       </div>
