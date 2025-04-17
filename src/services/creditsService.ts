@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -24,11 +25,18 @@ export interface Purchase {
 // Get user credits
 export const getUserCredits = async (): Promise<number> => {
   try {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) {
+      console.log("User not authenticated");
+      return 0;
+    }
+    
     // Use type assertion to work around TypeScript limitations 
     // until the generated types are updated
     const { data, error } = await (supabase
       .from('user_credits') as any)
       .select('credits')
+      .eq('user_id', user.user.id)
       .single();
 
     if (error) {
@@ -50,10 +58,17 @@ export const getUserCredits = async (): Promise<number> => {
 // Get user purchase history
 export const getPurchaseHistory = async (): Promise<Purchase[]> => {
   try {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) {
+      console.log("User not authenticated");
+      return [];
+    }
+    
     // Use type assertion to work around TypeScript limitations
     const { data, error } = await (supabase
       .from('purchases') as any)
       .select('*')
+      .eq('user_id', user.user.id)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -71,6 +86,16 @@ export const getPurchaseHistory = async (): Promise<Purchase[]> => {
 // Initialize checkout for purchasing credits
 export const initiateCheckout = async (priceId: string, quantity: number = 1) => {
   try {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to purchase credits.",
+        variant: "destructive",
+      });
+      return null;
+    }
+    
     const { data, error } = await supabase.functions.invoke('create-checkout', {
       body: { priceId, quantity },
     });
@@ -112,11 +137,21 @@ export const useCreditsForSearch = async (keywordResults: number): Promise<boole
   }
 
   try {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to use credits.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
     // Update user credits
     const { error } = await (supabase
       .from('user_credits') as any)
       .update({ credits: currentCredits - keywordResults })
-      .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+      .eq('user_id', user.user.id);
 
     if (error) {
       console.error("Error updating user credits:", error);
@@ -143,12 +178,18 @@ export const useCreditsForSearch = async (keywordResults: number): Promise<boole
 // Record search usage
 export const recordSearchUsage = async (keyword: string, resultsCount: number): Promise<void> => {
   try {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) {
+      console.log("User not authenticated, not recording search usage");
+      return;
+    }
+    
     const { error } = await (supabase
       .from('search_usage') as any)
       .insert({
         keyword,
         results_count: resultsCount,
-        user_id: (await supabase.auth.getUser()).data.user?.id
+        user_id: user.user.id
       });
 
     if (error) {
@@ -162,6 +203,13 @@ export const recordSearchUsage = async (keyword: string, resultsCount: number): 
 // Verify payment success from URL parameter
 export const verifyPaymentSuccess = async (sessionId: string): Promise<boolean> => {
   try {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) {
+      console.log("User not authenticated, cannot verify payment");
+      return false;
+    }
+    
+    // Check if we have a completed payment record
     const { data, error } = await (supabase
       .from('purchases') as any)
       .select('status')
@@ -170,6 +218,11 @@ export const verifyPaymentSuccess = async (sessionId: string): Promise<boolean> 
 
     if (error) {
       console.error("Error verifying payment:", error);
+      
+      // If the record doesn't exist yet, the payment might still be processing
+      if (error.code === 'PGRST116') {
+        console.log("Purchase record not found, payment may still be processing");
+      }
       return false;
     }
 

@@ -4,30 +4,67 @@ import { Container } from "@/components/ui/container";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, ReceiptText } from "lucide-react";
+import { Loader2, ReceiptText, AlertCircle } from "lucide-react";
 import { getUserCredits, getPurchaseHistory, Purchase } from "@/services/creditsService";
 import CreditsDisplay from "@/components/CreditsDisplay";
 import { formatDistanceToNow } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 const Account = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [authChecked, setAuthChecked] = useState(false);
+  const navigate = useNavigate();
   
+  // Check authentication
   useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        const purchaseHistory = await getPurchaseHistory();
-        setPurchases(purchaseHistory);
-      } catch (error) {
-        console.error("Error loading account data:", error);
-      } finally {
-        setIsLoading(false);
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getUser();
+      const isLoggedIn = !!data.user;
+      setIsAuthenticated(isLoggedIn);
+      setAuthChecked(true);
+      
+      if (!isLoggedIn) {
+        navigate("/auth", { replace: true });
+      } else {
+        loadData();
       }
     };
     
-    loadData();
-  }, []);
+    checkAuth();
+    
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const isLoggedIn = !!session?.user;
+      setIsAuthenticated(isLoggedIn);
+      
+      if (!isLoggedIn) {
+        navigate("/auth", { replace: true });
+      } else if (isLoggedIn && authChecked) {
+        loadData();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
+  
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      // Only load purchase history if user is authenticated
+      const purchaseHistory = await getPurchaseHistory();
+      setPurchases(purchaseHistory);
+    } catch (error) {
+      console.error("Error loading account data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   // Helper function to format a date
   const formatDate = (dateString: string) => {
@@ -60,6 +97,33 @@ const Account = () => {
     }
   };
 
+  // If still checking authentication, show loading
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-10 w-10 text-[#5414C2] animate-spin" />
+      </div>
+    );
+  }
+
+  // If not authenticated, user will be redirected, but we'll show a message just in case
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Container>
+          <div className="py-16 text-center">
+            <div className="max-w-md mx-auto">
+              <AlertCircle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
+              <p className="mb-6">Please sign in to view your account details.</p>
+              <Button onClick={() => navigate("/auth")}>Sign In</Button>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Container>
@@ -74,7 +138,7 @@ const Account = () => {
               </TabsList>
               
               <TabsContent value="credits" className="space-y-6">
-                <CreditsDisplay />
+                <CreditsDisplay onPurchaseComplete={loadData} />
                 
                 <Card>
                   <CardHeader>
@@ -143,6 +207,12 @@ const Account = () => {
                     ) : (
                       <div className="text-center py-8">
                         <p className="text-muted-foreground">No purchase history found.</p>
+                        <Button 
+                          variant="outline" 
+                          className="mt-4"
+                          onClick={loadData}>
+                          Refresh
+                        </Button>
                       </div>
                     )}
                   </CardContent>

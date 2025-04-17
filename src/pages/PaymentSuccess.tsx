@@ -1,43 +1,108 @@
 
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Search, ArrowRight, Loader2 } from "lucide-react";
 import { verifyPaymentSuccess, getUserCredits } from "@/services/creditsService";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const [isVerifying, setIsVerifying] = useState(true);
   const [paymentVerified, setPaymentVerified] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
   
   const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
+    // Check authentication status first
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getUser();
+      setIsAuthenticated(!!data.user);
+      
+      if (!data.user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to verify your payment",
+          variant: "destructive",
+        });
+        navigate("/auth", { replace: true });
+        return;
+      }
+      
+      // Proceed with payment verification
+      verifyPayment();
+    };
+    
     const verifyPayment = async () => {
       setIsVerifying(true);
       try {
         if (sessionId) {
-          const success = await verifyPaymentSuccess(sessionId);
-          setPaymentVerified(success);
+          // Try multiple verification attempts with delays
+          let success = false;
+          let attempts = 0;
+          const maxAttempts = 3;
           
-          // Get updated credits
-          const userCredits = await getUserCredits();
-          setCredits(userCredits);
+          while (!success && attempts < maxAttempts) {
+            attempts++;
+            console.log(`Verification attempt ${attempts}/${maxAttempts}`);
+            
+            success = await verifyPaymentSuccess(sessionId);
+            
+            if (success) {
+              setPaymentVerified(true);
+              // Get updated credits
+              const userCredits = await getUserCredits();
+              setCredits(userCredits);
+              
+              toast({
+                title: "Payment Successful",
+                description: "Your credits have been added to your account",
+              });
+              break;
+            } else if (attempts < maxAttempts) {
+              // Wait before trying again (exponential backoff)
+              await new Promise(resolve => setTimeout(resolve, 2000 * attempts));
+            }
+          }
+          
+          // If still not successful after all attempts
+          if (!success) {
+            setPaymentVerified(false);
+            toast({
+              title: "Payment Verification Delayed",
+              description: "Your payment may still be processing. Please check your account page in a few minutes.",
+              variant: "default",
+            });
+          }
         } else {
           setPaymentVerified(false);
+          toast({
+            title: "Invalid Session",
+            description: "No session ID was provided to verify the payment",
+            variant: "destructive",
+          });
         }
       } catch (error) {
         console.error("Error verifying payment:", error);
         setPaymentVerified(false);
+        toast({
+          title: "Verification Error",
+          description: "An unexpected error occurred while verifying your payment",
+          variant: "destructive",
+        });
       } finally {
         setIsVerifying(false);
       }
     };
 
-    verifyPayment();
-  }, [sessionId]);
+    checkAuth();
+  }, [sessionId, navigate, toast]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -48,7 +113,7 @@ const PaymentSuccess = () => {
               <div className="flex flex-col items-center space-y-4">
                 <Loader2 className="h-16 w-16 text-[#5414C2] animate-spin" />
                 <h1 className="text-3xl font-bold mb-4">Verifying your payment...</h1>
-                <p className="text-gray-600">Please wait while we confirm your purchase.</p>
+                <p className="text-gray-600">Please wait while we confirm your purchase. This may take a moment.</p>
               </div>
             ) : paymentVerified ? (
               <div className="flex flex-col items-center space-y-6">
@@ -80,19 +145,25 @@ const PaymentSuccess = () => {
             ) : (
               <div className="flex flex-col items-center space-y-6">
                 <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mb-4">
-                  <p className="text-yellow-800">We couldn't verify your payment. If you completed a purchase, it may take a few moments to process.</p>
+                  <p className="text-yellow-800">We couldn't verify your payment immediately. If you completed a purchase, it may take a few moments to process.</p>
                 </div>
                 
-                <h1 className="text-2xl font-bold">Payment Verification Failed</h1>
-                <p className="text-gray-600">If you believe this is an error, please check your account page in a few minutes or contact support.</p>
+                <h1 className="text-2xl font-bold">Payment Verification Delayed</h1>
+                <p className="text-gray-600">Your payment is being processed. Please check your account page in a few minutes or try refreshing this page.</p>
                 
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-4 mt-4">
+                  <Button asChild onClick={() => window.location.reload()}>
+                    <div>
+                      <Loader2 className="mr-2 h-4 w-4" />
+                      Retry Verification
+                    </div>
+                  </Button>
                   <Button asChild variant="outline">
                     <Link to="/account">
                       Check Account
                     </Link>
                   </Button>
-                  <Button asChild>
+                  <Button asChild variant="secondary">
                     <Link to="/search">
                       Return to Search
                       <ArrowRight className="ml-2 h-4 w-4" />
