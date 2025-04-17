@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Container } from "@/components/ui/container";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,7 +19,6 @@ const Account = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
   
-  // Check authentication
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -57,7 +55,6 @@ const Account = () => {
     
     checkAuth();
     
-    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       const isLoggedIn = !!session?.user;
       setIsAuthenticated(isLoggedIn);
@@ -77,7 +74,6 @@ const Account = () => {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      // Only load purchase history if user is authenticated
       const purchaseHistory = await getPurchaseHistory();
       setPurchases(purchaseHistory);
     } catch (error) {
@@ -92,7 +88,6 @@ const Account = () => {
     }
   };
   
-  // Helper function to format a date
   const formatDate = (dateString: string) => {
     try {
       return formatDistanceToNow(new Date(dateString), { addSuffix: true });
@@ -101,7 +96,6 @@ const Account = () => {
     }
   };
   
-  // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -109,7 +103,6 @@ const Account = () => {
     }).format(amount);
   };
   
-  // Get status badge color
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -123,7 +116,6 @@ const Account = () => {
     }
   };
 
-  // If still checking authentication, show loading
   if (!authChecked) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -132,7 +124,6 @@ const Account = () => {
     );
   }
 
-  // If not authenticated, user will be redirected, but we'll show a message just in case
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -237,7 +228,8 @@ const Account = () => {
                           variant="outline" 
                           className="mt-4"
                           onClick={loadData}
-                          startIcon={<RefreshCcw className="h-4 w-4 mr-2" />}>
+                          startIcon={<RefreshCcw className="h-4 w-4" />}
+                        >
                           Refresh History
                         </Button>
                       </div>
