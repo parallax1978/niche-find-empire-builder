@@ -18,12 +18,20 @@ const Account = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [authChecked, setAuthChecked] = useState(false);
+  const [loadingTimeout, setLoadingTimeout] = useState<boolean>(false);
   const navigate = useNavigate();
   
   useEffect(() => {
+    // Set a timeout to avoid infinite loading
+    const timeoutId = setTimeout(() => {
+      setLoadingTimeout(true);
+    }, 10000); // 10 seconds timeout
+    
     const checkAuth = async () => {
       try {
+        console.log("Checking auth status...");
         const { data, error } = await supabase.auth.getUser();
+        
         if (error) {
           console.error("Error checking auth:", error);
           toast({
@@ -33,23 +41,27 @@ const Account = () => {
           });
           setIsAuthenticated(false);
           setAuthChecked(true);
+          setIsLoading(false);
           navigate("/auth", { replace: true });
           return;
         }
         
         const isLoggedIn = !!data.user;
+        console.log("Auth check complete, user logged in:", isLoggedIn);
         setIsAuthenticated(isLoggedIn);
         setAuthChecked(true);
         
         if (!isLoggedIn) {
+          setIsLoading(false);
           navigate("/auth", { replace: true });
         } else {
-          loadData();
+          await loadData();
         }
       } catch (err) {
         console.error("Unexpected error during auth check:", err);
         setAuthChecked(true);
         setIsAuthenticated(false);
+        setIsLoading(false);
         navigate("/auth", { replace: true });
       }
     };
@@ -57,10 +69,12 @@ const Account = () => {
     checkAuth();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event);
       const isLoggedIn = !!session?.user;
       setIsAuthenticated(isLoggedIn);
       
       if (!isLoggedIn) {
+        setIsLoading(false);
         navigate("/auth", { replace: true });
       } else if (isLoggedIn && authChecked) {
         loadData();
@@ -69,13 +83,16 @@ const Account = () => {
 
     return () => {
       subscription.unsubscribe();
+      clearTimeout(timeoutId);
     };
-  }, [navigate]);
+  }, [navigate, authChecked]);
   
   const loadData = async () => {
+    console.log("Loading account data...");
     setIsLoading(true);
     try {
       const purchaseHistory = await getPurchaseHistory();
+      console.log("Purchase history loaded:", purchaseHistory);
       setPurchases(purchaseHistory);
     } catch (error) {
       console.error("Error loading account data:", error);
@@ -116,6 +133,24 @@ const Account = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  // Show loading timeout message if loading takes too long
+  if (loadingTimeout && isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Container>
+          <div className="py-16 text-center">
+            <div className="max-w-md mx-auto">
+              <AlertCircle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold mb-4">Loading is taking longer than expected</h1>
+              <p className="mb-6">There may be an issue with loading your account data.</p>
+              <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
 
   if (!authChecked) {
     return (
