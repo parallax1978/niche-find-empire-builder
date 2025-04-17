@@ -49,7 +49,7 @@ serve(async (req) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
-        const userId = session.metadata.userId || session.client_reference_id;
+        const userId = session.metadata?.userId || session.client_reference_id;
         const sessionId = session.id;
 
         if (!userId) {
@@ -70,61 +70,85 @@ serve(async (req) => {
           console.error(`Error finding purchase record: ${JSON.stringify(purchaseError)}`);
           
           if (purchaseError.code === "PGRST116") {
-            console.log("Purchase record not found, may need to create it");
+            console.log("Purchase record not found, creating it from session data");
             
-            // If purchase record doesn't exist yet, try to get information from the session
-            const lineItems = await stripe.checkout.sessions.listLineItems(sessionId);
-            if (lineItems && lineItems.data.length > 0) {
-              const item = lineItems.data[0];
-              const creditsToAdd = item.quantity || 0;
-              const amount = session.amount_total ? session.amount_total / 100 : 0;
-              
-              // Create the purchase record
-              const { error: insertError } = await supabaseAdmin
-                .from("purchases")
-                .insert({
-                  user_id: userId,
-                  amount,
-                  credits_purchased: creditsToAdd,
-                  stripe_session_id: sessionId,
-                  stripe_payment_intent_id: session.payment_intent,
-                  status: "completed"
-                });
+            try {
+              // Get line items from the session
+              const lineItems = await stripe.checkout.sessions.listLineItems(sessionId);
+              if (lineItems && lineItems.data.length > 0) {
+                const item = lineItems.data[0];
+                const creditsToAdd = item.quantity || 0;
+                const amount = session.amount_total ? session.amount_total / 100 : 0;
                 
-              if (insertError) {
-                console.error(`Error creating purchase record: ${JSON.stringify(insertError)}`);
-                break;
+                console.log(`Creating purchase record with ${creditsToAdd} credits for $${amount}`);
+                
+                // Create the purchase record
+                const { error: insertError } = await supabaseAdmin
+                  .from("purchases")
+                  .insert({
+                    user_id: userId,
+                    amount,
+                    credits_purchased: creditsToAdd,
+                    stripe_session_id: sessionId,
+                    stripe_payment_intent_id: session.payment_intent,
+                    status: "completed"
+                  });
+                  
+                if (insertError) {
+                  console.error(`Error creating purchase record: ${JSON.stringify(insertError)}`);
+                  break;
+                }
+                
+                console.log(`Created new purchase record for session ${sessionId}`);
+                
+                // Update user credits
+                await updateUserCredits(supabaseAdmin, userId, creditsToAdd);
+              } else {
+                console.error("No line items found for the session");
               }
-              
-              console.log(`Created new purchase record for session ${sessionId} with ${creditsToAdd} credits`);
-              
-              // Update user credits
-              await updateUserCredits(supabaseAdmin, userId, creditsToAdd);
-            } else {
-              console.error("No line items found for the session");
+            } catch (error) {
+              console.error(`Error getting session details: ${error.message}`);
             }
           } else {
             break;
           }
         } else {
-          // Purchase record exists, update its status
-          console.log(`Updating purchase record: ${purchaseData.id}`);
-          
-          const { error: updateError } = await supabaseAdmin
-            .from("purchases")
-            .update({
-              status: "completed",
-              stripe_payment_intent_id: session.payment_intent,
-            })
-            .eq("id", purchaseData.id);
+          // Purchase record exists, update its status if not already completed
+          if (purchaseData.status !== "completed") {
+            console.log(`Updating purchase record ${purchaseData.id} to completed`);
+            
+            const { error: updateError } = await supabaseAdmin
+              .from("purchases")
+              .update({
+                status: "completed",
+                stripe_payment_intent_id: session.payment_intent,
+              })
+              .eq("id", purchaseData.id);
 
-          if (updateError) {
-            console.error(`Error updating purchase record: ${JSON.stringify(updateError)}`);
-            break;
+            if (updateError) {
+              console.error(`Error updating purchase record: ${JSON.stringify(updateError)}`);
+              break;
+            }
+            
+            console.log(`Successfully updated purchase record to completed`);
+          } else {
+            console.log(`Purchase record ${purchaseData.id} already marked as completed`);
           }
           
-          // Update user credits
-          await updateUserCredits(supabaseAdmin, userId, purchaseData.credits_purchased);
+          // Check if credits were already added
+          const { data: userCredits } = await supabaseAdmin
+            .from("user_credits")
+            .select("credits")
+            .eq("user_id", userId)
+            .single();
+            
+          if (!userCredits || userCredits.credits < purchaseData.credits_purchased) {
+            console.log(`Adding ${purchaseData.credits_purchased} credits to user ${userId}`);
+            // Update user credits
+            await updateUserCredits(supabaseAdmin, userId, purchaseData.credits_purchased);
+          } else {
+            console.log(`Credits already appear to be added for user ${userId}`);
+          }
         }
         
         break;
@@ -160,38 +184,43 @@ async function updateUserCredits(supabaseAdmin, userId, creditAmount) {
     .eq("user_id", userId)
     .single();
 
-  if (userCreditsError && userCreditsError.code !== "PGRST116") {
+  if (userCreditsError) {
     console.error(`Error checking user credits: ${JSON.stringify(userCreditsError)}`);
+    
+    if (userCreditsError.code === "PGRST116") {
+      // User has no credits record, create one
+      console.log(`No credits record found for user ${userId}, creating new record`);
+      
+      const { error: insertCreditsError } = await supabaseAdmin
+        .from("user_credits")
+        .insert({
+          user_id: userId,
+          credits: creditAmount,
+        });
+
+      if (insertCreditsError) {
+        console.error(`Error inserting user credits: ${JSON.stringify(insertCreditsError)}`);
+      } else {
+        console.log(`Created new credits record for user ${userId} with ${creditAmount} credits`);
+      }
+    }
     return;
   }
 
-  if (userCreditsData) {
-    // Update existing credits
-    const { error: updateCreditsError } = await supabaseAdmin
-      .from("user_credits")
-      .update({
-        credits: userCreditsData.credits + creditAmount,
-      })
-      .eq("user_id", userId);
+  // Update existing credits
+  console.log(`Updating credits for user ${userId} from ${userCreditsData.credits} to ${userCreditsData.credits + creditAmount}`);
+  
+  const { error: updateCreditsError } = await supabaseAdmin
+    .from("user_credits")
+    .update({
+      credits: userCreditsData.credits + creditAmount,
+      updated_at: new Date().toISOString()
+    })
+    .eq("user_id", userId);
 
-    if (updateCreditsError) {
-      console.error(`Error updating user credits: ${JSON.stringify(updateCreditsError)}`);
-    } else {
-      console.log(`Updated credits for user ${userId} to ${userCreditsData.credits + creditAmount}`);
-    }
+  if (updateCreditsError) {
+    console.error(`Error updating user credits: ${JSON.stringify(updateCreditsError)}`);
   } else {
-    // Create new user credits record
-    const { error: insertCreditsError } = await supabaseAdmin
-      .from("user_credits")
-      .insert({
-        user_id: userId,
-        credits: creditAmount,
-      });
-
-    if (insertCreditsError) {
-      console.error(`Error inserting user credits: ${JSON.stringify(insertCreditsError)}`);
-    } else {
-      console.log(`Created new credits record for user ${userId} with ${creditAmount} credits`);
-    }
+    console.log(`Updated credits for user ${userId} to ${userCreditsData.credits + creditAmount}`);
   }
 }

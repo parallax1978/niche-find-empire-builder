@@ -4,13 +4,14 @@ import { Container } from "@/components/ui/container";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, ReceiptText, AlertCircle } from "lucide-react";
+import { Loader2, ReceiptText, AlertCircle, RefreshCcw } from "lucide-react";
 import { getUserCredits, getPurchaseHistory, Purchase } from "@/services/creditsService";
 import CreditsDisplay from "@/components/CreditsDisplay";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 
 const Account = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -22,15 +23,35 @@ const Account = () => {
   // Check authentication
   useEffect(() => {
     const checkAuth = async () => {
-      const { data } = await supabase.auth.getUser();
-      const isLoggedIn = !!data.user;
-      setIsAuthenticated(isLoggedIn);
-      setAuthChecked(true);
-      
-      if (!isLoggedIn) {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) {
+          console.error("Error checking auth:", error);
+          toast({
+            title: "Authentication Error",
+            description: "Unable to verify your account. Please try signing in again.",
+            variant: "destructive",
+          });
+          setIsAuthenticated(false);
+          setAuthChecked(true);
+          navigate("/auth", { replace: true });
+          return;
+        }
+        
+        const isLoggedIn = !!data.user;
+        setIsAuthenticated(isLoggedIn);
+        setAuthChecked(true);
+        
+        if (!isLoggedIn) {
+          navigate("/auth", { replace: true });
+        } else {
+          loadData();
+        }
+      } catch (err) {
+        console.error("Unexpected error during auth check:", err);
+        setAuthChecked(true);
+        setIsAuthenticated(false);
         navigate("/auth", { replace: true });
-      } else {
-        loadData();
       }
     };
     
@@ -61,6 +82,11 @@ const Account = () => {
       setPurchases(purchaseHistory);
     } catch (error) {
       console.error("Error loading account data:", error);
+      toast({
+        title: "Data Loading Error",
+        description: "Could not load your account data. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -210,8 +236,9 @@ const Account = () => {
                         <Button 
                           variant="outline" 
                           className="mt-4"
-                          onClick={loadData}>
-                          Refresh
+                          onClick={loadData}
+                          startIcon={<RefreshCcw className="h-4 w-4 mr-2" />}>
+                          Refresh History
                         </Button>
                       </div>
                     )}

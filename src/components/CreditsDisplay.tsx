@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Coins, CreditCard, Package, LogIn } from "lucide-react";
+import { Coins, CreditCard, Package, LogIn, RefreshCw } from "lucide-react";
 import { getUserCredits, initiateCheckout } from "@/services/creditsService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -24,11 +24,22 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
   useEffect(() => {
     // Check authentication status
     const checkAuth = async () => {
-      const { data } = await supabase.auth.getUser();
-      setIsAuthenticated(!!data.user);
-      
-      if (data.user) {
-        await fetchCredits();
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) {
+          console.error("Auth error in CreditsDisplay:", error);
+          setIsAuthenticated(false);
+          return;
+        }
+        
+        setIsAuthenticated(!!data.user);
+        
+        if (data.user) {
+          await fetchCredits();
+        }
+      } catch (err) {
+        console.error("Unexpected error in CreditsDisplay auth check:", err);
+        setIsAuthenticated(false);
       }
     };
     
@@ -52,7 +63,9 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
   const fetchCredits = async () => {
     setIsLoading(true);
     try {
+      console.log("Fetching user credits in CreditsDisplay component");
       const userCredits = await getUserCredits();
+      console.log("Received user credits:", userCredits);
       setCredits(userCredits);
     } catch (error) {
       console.error("Failed to fetch credits:", error);
@@ -64,6 +77,14 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRefreshCredits = async () => {
+    await fetchCredits();
+    toast({
+      title: "Credits Refreshed",
+      description: "Your credit balance has been updated."
+    });
   };
 
   const handlePurchaseBasePackage = async () => {
@@ -193,7 +214,19 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Your Credits</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          <span>Your Credits</span>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleRefreshCredits} 
+            className="h-8 w-8 p-0"
+            title="Refresh credits"
+          >
+            <RefreshCw className="h-4 w-4" />
+            <span className="sr-only">Refresh</span>
+          </Button>
+        </CardTitle>
         <CardDescription>Purchase credits to find more keywords</CardDescription>
       </CardHeader>
       <CardContent>

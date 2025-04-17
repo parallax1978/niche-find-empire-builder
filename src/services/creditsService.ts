@@ -31,6 +31,8 @@ export const getUserCredits = async (): Promise<number> => {
       return 0;
     }
     
+    console.log("Fetching credits for user:", user.user.id);
+    
     // Use type assertion to work around TypeScript limitations 
     // until the generated types are updated
     const { data, error } = await (supabase
@@ -42,12 +44,26 @@ export const getUserCredits = async (): Promise<number> => {
     if (error) {
       console.error("Error fetching user credits:", error);
       if (error.code === 'PGRST116') {
-        // No credits found, which means the user hasn't purchased any yet
+        console.log("No credits found for user, creating new record with 0 credits");
+        
+        // No credits found, create a new record with 0 credits
+        const { error: insertError } = await (supabase
+          .from('user_credits') as any)
+          .insert({
+            user_id: user.user.id,
+            credits: 0
+          });
+          
+        if (insertError) {
+          console.error("Error creating user credits record:", insertError);
+        }
+        
         return 0;
       }
       throw error;
     }
 
+    console.log("User credits retrieved:", data?.credits);
     return data?.credits || 0;
   } catch (error) {
     console.error("Error in getUserCredits:", error);
@@ -64,6 +80,8 @@ export const getPurchaseHistory = async (): Promise<Purchase[]> => {
       return [];
     }
     
+    console.log("Fetching purchase history for user:", user.user.id);
+    
     // Use type assertion to work around TypeScript limitations
     const { data, error } = await (supabase
       .from('purchases') as any)
@@ -76,6 +94,7 @@ export const getPurchaseHistory = async (): Promise<Purchase[]> => {
       throw error;
     }
 
+    console.log(`Retrieved ${data?.length || 0} purchase records`);
     return data || [];
   } catch (error) {
     console.error("Error in getPurchaseHistory:", error);
@@ -96,6 +115,8 @@ export const initiateCheckout = async (priceId: string, quantity: number = 1) =>
       return null;
     }
     
+    console.log(`Initiating checkout for price ${priceId}, quantity ${quantity}`);
+    
     const { data, error } = await supabase.functions.invoke('create-checkout', {
       body: { priceId, quantity },
     });
@@ -110,6 +131,7 @@ export const initiateCheckout = async (priceId: string, quantity: number = 1) =>
       return null;
     }
 
+    console.log("Checkout session created:", data);
     return data;
   } catch (error) {
     console.error("Error in initiateCheckout:", error);
@@ -147,6 +169,8 @@ export const useCreditsForSearch = async (keywordResults: number): Promise<boole
       return false;
     }
     
+    console.log(`Using ${keywordResults} credits, current balance: ${currentCredits}`);
+    
     // Update user credits
     const { error } = await (supabase
       .from('user_credits') as any)
@@ -163,6 +187,7 @@ export const useCreditsForSearch = async (keywordResults: number): Promise<boole
       return false;
     }
 
+    console.log(`Credits updated. New balance: ${currentCredits - keywordResults}`);
     return true;
   } catch (error) {
     console.error("Error in useCreditsForSearch:", error);
@@ -183,6 +208,8 @@ export const recordSearchUsage = async (keyword: string, resultsCount: number): 
       console.log("User not authenticated, not recording search usage");
       return;
     }
+    
+    console.log(`Recording search usage: ${keyword}, ${resultsCount} results`);
     
     const { error } = await (supabase
       .from('search_usage') as any)
@@ -209,10 +236,12 @@ export const verifyPaymentSuccess = async (sessionId: string): Promise<boolean> 
       return false;
     }
     
+    console.log(`Verifying payment for session ${sessionId}`);
+    
     // Check if we have a completed payment record
     const { data, error } = await (supabase
       .from('purchases') as any)
-      .select('status')
+      .select('status, credits_purchased')
       .eq('stripe_session_id', sessionId)
       .single();
 
@@ -226,6 +255,7 @@ export const verifyPaymentSuccess = async (sessionId: string): Promise<boolean> 
       return false;
     }
 
+    console.log(`Payment verification result: ${data?.status}`);
     return data?.status === 'completed';
   } catch (error) {
     console.error("Error in verifyPaymentSuccess:", error);
