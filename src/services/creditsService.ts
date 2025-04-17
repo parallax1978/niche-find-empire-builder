@@ -105,8 +105,10 @@ export const getPurchaseHistory = async (): Promise<Purchase[]> => {
 // Initialize checkout for purchasing credits
 export const initiateCheckout = async (priceId: string, quantity: number = 1) => {
   try {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user?.user) {
+    // First check if the user is authenticated
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) {
+      console.error("Authentication check failed:", userError);
       toast({
         title: "Authentication Required",
         description: "Please sign in to purchase credits.",

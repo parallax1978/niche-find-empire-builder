@@ -16,49 +16,66 @@ interface CreditsDisplayProps {
 
 const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayProps) => {
   const [credits, setCredits] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check authentication status
-    const checkAuth = async () => {
+    // Initial auth check and subscription setup
+    const checkAuthAndSetupSubscription = async () => {
       try {
-        const { data, error } = await supabase.auth.getUser();
+        const { data, error } = await supabase.auth.getSession();
+        
         if (error) {
           console.error("Auth error in CreditsDisplay:", error);
           setIsAuthenticated(false);
+          setIsLoading(false);
           return;
         }
         
-        setIsAuthenticated(!!data.user);
+        const isLoggedIn = !!data.session?.user;
+        console.log("Initial auth check - User logged in:", isLoggedIn);
+        setIsAuthenticated(isLoggedIn);
         
-        if (data.user) {
+        if (isLoggedIn) {
           await fetchCredits();
+        } else {
+          setIsLoading(false);
         }
       } catch (err) {
         console.error("Unexpected error in CreditsDisplay auth check:", err);
         setIsAuthenticated(false);
+        setIsLoading(false);
       }
     };
     
-    checkAuth();
+    checkAuthAndSetupSubscription();
 
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed in CreditsDisplay:", event, !!session);
       const isLoggedIn = !!session?.user;
-      setIsAuthenticated(isLoggedIn);
       
-      if (isLoggedIn) {
-        await fetchCredits();
+      if (isLoggedIn !== isAuthenticated) {
+        setIsAuthenticated(isLoggedIn);
+        
+        if (isLoggedIn) {
+          // Use setTimeout to avoid immediate Supabase call in the callback
+          setTimeout(async () => {
+            await fetchCredits();
+          }, 0);
+        } else {
+          setCredits(null);
+          setIsLoading(false);
+        }
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [isAuthenticated]);
 
   const fetchCredits = async () => {
     setIsLoading(true);
@@ -99,7 +116,10 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
 
     setIsPurchasing(true);
     try {
+      console.log("Initiating base package purchase");
       const response = await initiateCheckout('price_1REebyBLSlqVQTdBMTgjVes');
+      console.log("Checkout response:", response);
+      
       if (response?.sessionUrl) {
         window.location.href = response.sessionUrl;
       } else {
@@ -133,7 +153,10 @@ const CreditsDisplay = ({ minimal = false, onPurchaseComplete }: CreditsDisplayP
 
     setIsPurchasing(true);
     try {
+      console.log(`Initiating purchase of ${quantity} additional credits`);
       const response = await initiateCheckout('price_1REef7BLSlqVQTdBXmVmVoXQ', quantity);
+      console.log("Checkout response:", response);
+      
       if (response?.sessionUrl) {
         window.location.href = response.sessionUrl;
       } else {
